@@ -1,6 +1,6 @@
 VERSION=x.x.x-development
 REPOSITORY=github.com/snebel29/kwatchman
-LD_FLAGS="-X main.Version=$(VERSION) -w -extldflags -static"
+LD_FLAGS="-X ${REPOSITORY}/internal/pkg/cli.Version=$(VERSION) -w -extldflags -static"
 
 
 build: deps
