@@ -24,13 +24,18 @@ func TestCLIWrongArgsExitCode(t *testing.T) {
 
 func TestCliArgs(t *testing.T) {
 	clusterName := "myClusterName"
+	kubeconfig  := "myKubeconfig"
 	os.Args = []string{
 		"kwatchman",
 		fmt.Sprintf("--cluster-name=%s", clusterName),
+		fmt.Sprintf("--kubeconfig=%s", kubeconfig),
 	}
 
 	cli := NewCLI()
 	if cli.ClusterName != clusterName {
 		t.Errorf("%s != %s", cli.ClusterName, clusterName)
+	}
+	if cli.Kubeconfig != kubeconfig {
+		t.Errorf("%s != %s", cli.Kubeconfig, kubeconfig)
 	}
 }
