@@ -7,5 +7,7 @@ import (
 )
 
 func main() {
-	log.Fatal(kwatchman.Run(cli.NewCLI()))
+	c := cli.NewCLI()
+	log.Infof("Running kwatchman with %#v", c)
+	log.Fatal(kwatchman.Run(c))
 }
