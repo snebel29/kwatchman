@@ -8,45 +8,47 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
-type Watcher struct {
+type Watcher interface {
+	Run() error
+	Shutdown()
+}
+
+type K8sWatcher struct {
 	opts      *cli.CLIArgs
 	clientset kubernetes.Interface
 }
 
-func NewWatcher(c *cli.CLIArgs) *Watcher {
-	return &Watcher{
-		opts: c,
+func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
+	clientset, err := getK8sClient(c.Kubeconfig)
+	if err != nil {
+		return nil, err
 	}
+	clientset = clientset
+	return &K8sWatcher{
+		opts:      c,
+		clientset: clientset,
+	}, nil
 }
 
-func (w *Watcher) Run() error {
-	clientset, err := w.GetK8sClient()
-	if err != nil {
-		return err
-	}
-	w.clientset = clientset
+func (w *K8sWatcher) Run() error {
 	// TODO: Run watcher loop ...
+	return errors.New("Watcher.Run() should have never returned!")
+}
 
-	termination := make(chan os.Signal, 1)
-	signal.Notify(termination, syscall.SIGTERM, syscall.SIGINT)
-	<-termination
-
-	return nil
+func (w *K8sWatcher) Shutdown() {
+	// TODO: Handle shutdown gracefully
 }
 
 // Returns kubernetes API clientset, depending on the context where kwatchman
 // is run, InCluster vs local using Kubeconfig file for the last
-func (w *Watcher) GetK8sClient() (kubernetes.Interface, error) {
+func getK8sClient(kubeconfigFile string) (kubernetes.Interface, error) {
 	var config *rest.Config
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		// We may be out of k8s so try to read from kubeconfig
-		config, err = clientcmd.BuildConfigFromFlags("", w.opts.Kubeconfig)
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfigFile)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +56,7 @@ func (w *Watcher) GetK8sClient() (kubernetes.Interface, error) {
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		errors.New(fmt.Sprintf("Can't create kubernetes client: %s", err))
+		return nil, errors.New(fmt.Sprintf("Can't create kubernetes client: %s", err))
 	}
 	return clientset, nil
 }
