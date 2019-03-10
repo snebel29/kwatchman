@@ -1,23 +1,26 @@
 package watcher
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	_ "github.com/sirupsen/logrus"
+	"github.com/snebel29/kwatchman/internal/pkg/cli"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"github.com/snebel29/kwatchman/internal/pkg/cli"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type Watcher struct {
-	opts 	  *cli.CLIArgs
+	opts      *cli.CLIArgs
 	clientset kubernetes.Interface
 }
 
 func NewWatcher(c *cli.CLIArgs) *Watcher {
 	return &Watcher{
-		opts: 	   c,
+		opts: c,
 	}
 }
 
@@ -28,7 +31,12 @@ func (w *Watcher) Run() error {
 	}
 	w.clientset = clientset
 	// TODO: Run watcher loop ...
-	return errors.New("Watcher.Run() should have never returned!")
+
+	termination := make(chan os.Signal, 1)
+	signal.Notify(termination, syscall.SIGTERM, syscall.SIGINT)
+	<-termination
+
+	return nil
 }
 
 // Returns kubernetes API clientset, depending on the context where kwatchman
