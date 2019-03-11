@@ -8,13 +8,15 @@ import (
 	"syscall"
 )
 
-func Run(w watcher.Watcher) error {
-	shutdown := make(chan os.Signal, 1)
+var shutdown chan os.Signal
+
+func Start(w watcher.Watcher) error {
+	shutdown = make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
 		sig := <-shutdown
-		log.Infof("Shutdown upon signal %s", sig.Signal)
+		log.Infof("Shutdown upon signal %s", sig.String())
 		w.Shutdown()
 		os.Exit(0)
 	}()

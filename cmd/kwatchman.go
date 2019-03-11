@@ -14,5 +14,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(kwatchman.Run(w))
+	log.Fatal(kwatchman.Start(w))
 }
