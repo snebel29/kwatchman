@@ -1,11 +1,13 @@
 package cli
 
 import (
+	"fmt"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"os"
 )
 
 var (
-	Version 	string
+	Version     string
 	clusterName = kingpin.Flag(
 		"cluster-name",
 		"Name of k8s cluster where kwatchman is running, use for notification purposes only").Default(
@@ -13,7 +15,7 @@ var (
 	kubeconfig = kingpin.Flag(
 		"kubeconfig",
 		"kubeconfig path for running out of k8s").Default(
-		"${HOME}/.kube/config").Short('k').String()
+		fmt.Sprintf("%s/.kube/config", os.Getenv("HOME"))).Short('k').String()
 )
 
 // CLIArgs holds the command line arguments
