@@ -13,7 +13,7 @@ var (
 	kubeconfig = kingpin.Flag(
 		"kubeconfig",
 		"kubeconfig path for running out of k8s").Default(
-		"~/.kube/config").Short('k').String()
+		"${HOME}/.kube/config").Short('k').String()
 )
 
 // CLIArgs holds the command line arguments
@@ -27,6 +27,7 @@ func NewCLI() *CLIArgs {
 	kingpin.Version(Version)
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
+	//TODO: Expand home variable if default kubeconfig had been chosen
 	return &CLIArgs{
 		ClusterName: *clusterName,
 		Kubeconfig:  *kubeconfig,
