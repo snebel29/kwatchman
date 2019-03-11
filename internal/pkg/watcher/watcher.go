@@ -6,13 +6,14 @@ import (
 	_ "github.com/sirupsen/logrus"
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
 	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 type Watcher interface {
 	Run() error
-	Shutdown()
+	Shutdown() error
 }
 
 type K8sWatcher struct {
@@ -37,8 +38,9 @@ func (w *K8sWatcher) Run() error {
 	return errors.New("Watcher.Run() should have never returned!")
 }
 
-func (w *K8sWatcher) Shutdown() {
+func (w *K8sWatcher) Shutdown() error {
 	// TODO: Handle shutdown gracefully
+	return nil
 }
 
 // Returns kubernetes API clientset, depending on the context where kwatchman
