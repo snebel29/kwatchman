@@ -18,5 +18,3 @@ func TestGetK8sClient(t *testing.T) {
 	//since that function uses hardcoded /var/run paths that requires
 	//privileged permissions, the function can't be easily tested
 }
-
-//TODO: Ensure different cloud providers such as gcp, aws and azure works within kubeconfig
