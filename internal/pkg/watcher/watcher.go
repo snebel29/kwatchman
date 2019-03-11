@@ -44,16 +44,21 @@ func (w *K8sWatcher) Shutdown() error {
 }
 
 // Returns kubernetes API clientset, depending on the context where kwatchman
-// is run, InCluster vs local using Kubeconfig file for the last
+// is run, InCluster vs local, kubeconfig will be used only when running out of k8s
+// you can pass an empty string when running InCluster
 func getK8sClient(kubeconfigFile string) (kubernetes.Interface, error) {
 	var config *rest.Config
 	config, err := rest.InClusterConfig()
+
 	if err != nil {
-		// We may be out of k8s so try to read from kubeconfig
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfigFile)
-		if err != nil {
-			return nil, err
+		// If ErrNotInCluster then we try to get client from kubeconfig
+		if err == rest.ErrNotInCluster {
+			config, err = clientcmd.BuildConfigFromFlags("", kubeconfigFile)
+			if err != nil {
+				return nil, err
+			}
 		}
+		return nil, err
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
