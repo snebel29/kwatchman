@@ -29,7 +29,6 @@ func NewCLI() *CLIArgs {
 	kingpin.Version(Version)
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
-	//TODO: Expand home variable if default kubeconfig had been chosen
 	return &CLIArgs{
 		ClusterName: *clusterName,
 		Kubeconfig:  *kubeconfig,
