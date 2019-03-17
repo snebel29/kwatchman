@@ -9,7 +9,7 @@ import (
 )
 
 type WatcherMock struct {
-	RunCalled 	   bool
+	RunCalled      bool
 	ShutdownCalled bool
 	ExitCalled     bool
 }
@@ -19,12 +19,11 @@ func (w *WatcherMock) Run() error {
 	return nil
 }
 
-func (w *WatcherMock) Shutdown() error {
+func (w *WatcherMock) Shutdown() {
 	w.ShutdownCalled = true
-	return nil
 }
 
-func TestRun(t *testing.T) {
+func TestStart(t *testing.T) {
 	watcherMock := new(WatcherMock)
 	fakeExit := func(int) {
 		watcherMock.ExitCalled = true

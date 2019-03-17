@@ -27,3 +27,8 @@ func TestGetK8sClient(t *testing.T) {
 		t.Errorf("Failed to get client from kubeconfig %s: %v", kubeconfig, err)
 	}
 }
+
+func TestK8sWatcher(t *testing.T) {
+	// TODO: Test Run()
+	// TODO: Test Shutdown()
+}
