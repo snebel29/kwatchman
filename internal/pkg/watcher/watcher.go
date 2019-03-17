@@ -1,6 +1,7 @@
 package watcher
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	_ "github.com/sirupsen/logrus"
@@ -11,12 +12,19 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+const (
+	// TODO: Allow to configure at runtime
+	DeploymentEnabled bool = true
+)
+
 type Watcher interface {
 	Run() error
-	Shutdown() error
+	Shutdown()
 }
 
 type K8sWatcher struct {
+	ctx       context.Context
+	cancel    context.CancelFunc
 	opts      *cli.CLIArgs
 	clientset kubernetes.Interface
 }
@@ -26,21 +34,27 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 	if err != nil {
 		return nil, err
 	}
-	clientset = clientset
+
+	ctx, cancel := context.WithCancel(context.Background())
 	return &K8sWatcher{
+		ctx:       ctx,
+		cancel:    cancel,
 		opts:      c,
 		clientset: clientset,
 	}, nil
 }
 
 func (w *K8sWatcher) Run() error {
-	// TODO: Run watcher loop ...
-	return errors.New("Watcher.Run() should have never returned!")
+	defer w.Shutdown()
+
+	if DeploymentEnabled {
+		// TODO: go func() watchDeployment
+	}
+	return nil
 }
 
-func (w *K8sWatcher) Shutdown() error {
-	// TODO: Handle shutdown gracefully
-	return nil
+func (w *K8sWatcher) Shutdown() {
+	w.cancel()
 }
 
 // Returns kubernetes API clientset, depending on the context where kwatchman

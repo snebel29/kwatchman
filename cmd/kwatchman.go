@@ -14,5 +14,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(kwatchman.Start(w))
+	if err := kwatchman.Start(w); err != nil {
+		log.Fatal(err)
+	}
+	log.Info("Finishing kwatchman")
 }
