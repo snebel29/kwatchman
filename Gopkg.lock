@@ -73,6 +73,14 @@
   version = "v0.1.0"
 
 [[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = "UT"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
@@ -160,6 +168,17 @@
   ]
   pruneopts = "UT"
   revision = "3befbb6ad0cc97d4c25d851e9528915809e1a22f"
+
+[[projects]]
+  digest = "1:d15ee511aa0f56baacc1eb4c6b922fa1c03b38413b6be18166b996d82a0156ea"
+  name = "github.com/hashicorp/golang-lru"
+  packages = [
+    ".",
+    "simplelru",
+  ]
+  pruneopts = "UT"
+  revision = "7087cb70de9f7a8bc0a10c375cb0d2280a8edf9c"
+  version = "v0.5.1"
 
 [[projects]]
   digest = "1:a0cefd27d12712af4b5018dc7046f245e1e3b5760e2e848c30b171b570708f9b"
@@ -488,12 +507,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:97f690e88b67728656d37740d16daeaf0e22c0ecd8b0c7793747c3f156c40858"
+  digest = "1:12ed522d664bc30c89ead6dc418f297781f9647c591dd127b1a7ec7f850b3d9a"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
     "pkg/api/meta",
     "pkg/api/resource",
+    "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
     "pkg/apis/meta/v1beta1",
@@ -511,7 +531,9 @@
     "pkg/runtime/serializer/versioning",
     "pkg/selection",
     "pkg/types",
+    "pkg/util/cache",
     "pkg/util/clock",
+    "pkg/util/diff",
     "pkg/util/errors",
     "pkg/util/framer",
     "pkg/util/intstr",
@@ -522,6 +544,7 @@
     "pkg/util/sets",
     "pkg/util/validation",
     "pkg/util/validation/field",
+    "pkg/util/wait",
     "pkg/util/yaml",
     "pkg/version",
     "pkg/watch",
@@ -531,7 +554,7 @@
   revision = "4519e5924e99cd805e0e5e1dc8e43170c3f94909"
 
 [[projects]]
-  digest = "1:ba4c72b4bb30ca158d0cb2b2c68be14050203e19ea1077f83ea508fc2d1bf3a6"
+  digest = "1:5b0aa169e0df1d3e0a762b615be2a9e0da66729c51697fa267bf414277972d68"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -583,19 +606,23 @@
     "rest/watch",
     "third_party/forked/golang/template",
     "tools/auth",
+    "tools/cache",
     "tools/clientcmd",
     "tools/clientcmd/api",
     "tools/clientcmd/api/latest",
     "tools/clientcmd/api/v1",
     "tools/metrics",
+    "tools/pager",
     "tools/reference",
     "transport",
+    "util/buffer",
     "util/cert",
     "util/connrotation",
     "util/flowcontrol",
     "util/homedir",
     "util/integer",
     "util/jsonpath",
+    "util/retry",
   ]
   pruneopts = "UT"
   revision = "e64494209f554a6723674bd494d69445fb76a1d4"
@@ -624,9 +651,11 @@
     "github.com/bouk/monkey",
     "github.com/sirupsen/logrus",
     "gopkg.in/alecthomas/kingpin.v2",
+    "k8s.io/api/apps/v1",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
+    "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
   ]
   solver-name = "gps-cdcl"

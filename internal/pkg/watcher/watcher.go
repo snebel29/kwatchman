@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
+	r "github.com/snebel29/kwatchman/internal/pkg/watcher/resources"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"sync"
 )
@@ -18,23 +18,12 @@ type Watcher interface {
 	Shutdown()
 }
 
-type ResourceWatcher interface {
-	Watcher
-	HasSynced() bool
-}
-
-type K8sResourceWatcher struct {
-	ctx      context.Context
-	kind     string
-	informer cache.SharedInformer
-}
-
 type K8sWatcher struct {
 	ctx          context.Context
 	cancel       context.CancelFunc
 	opts         *cli.CLIArgs
 	clientset    kubernetes.Interface
-	k8sResources []ResourceWatcher
+	k8sResources []r.ResourceWatcher
 }
 
 func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
@@ -50,7 +39,7 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 		opts:      c,
 		clientset: clientset,
 		// TODO: Make resources configurable by user
-		k8sResources: []ResourceWatcher{NewK8sDeploymentWatcher(ctx)},
+		k8sResources: []r.ResourceWatcher{r.NewK8sDeploymentWatcher(ctx)},
 	}, nil
 }
 
@@ -60,7 +49,7 @@ func (w *K8sWatcher) Run() error {
 	var wg sync.WaitGroup
 	for _, rw := range w.k8sResources {
 		wg.Add(1)
-		go func(r ResourceWatcher) {
+		go func(r r.ResourceWatcher) {
 			defer wg.Done()
 			// TODO: Handle errors?
 			r.Run()
