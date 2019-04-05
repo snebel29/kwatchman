@@ -554,7 +554,7 @@
   revision = "4519e5924e99cd805e0e5e1dc8e43170c3f94909"
 
 [[projects]]
-  digest = "1:5b0aa169e0df1d3e0a762b615be2a9e0da66729c51697fa267bf414277972d68"
+  digest = "1:e4ae55798577d0d7f877f4cc319f8deddc99161b7f9bc6826ba002991ed75239"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -623,6 +623,7 @@
     "util/integer",
     "util/jsonpath",
     "util/retry",
+    "util/workqueue",
   ]
   pruneopts = "UT"
   revision = "e64494209f554a6723674bd494d69445fb76a1d4"
@@ -657,6 +658,7 @@
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/client-go/util/workqueue",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
