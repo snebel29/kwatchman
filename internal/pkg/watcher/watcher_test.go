@@ -44,12 +44,6 @@ func TestNewK8sWatcher(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	if w.ctx == nil {
-		t.Errorf("K8sWatcher.ctx is not set correctly %#v", w.ctx)
-	}
-	if w.cancel == nil {
-		t.Errorf("K8sWatcher.cancel is not set correctly %#v", w.cancel)
-	}
 	if w.opts != c {
 		t.Errorf("K8sWatcher.opts is not set correctly %#v", w.opts)
 	}
@@ -59,9 +53,8 @@ func TestNewK8sWatcher(t *testing.T) {
 }
 
 type ResourceWatcherMock struct {
-	RunCalled       bool
-	ShutdownCalled  bool
-	HasSyncedCalled bool
+	RunCalled      bool
+	ShutdownCalled bool
 }
 
 func (w *ResourceWatcherMock) Run() error {
@@ -73,16 +66,8 @@ func (w *ResourceWatcherMock) Shutdown() {
 	w.ShutdownCalled = true
 }
 
-func (w *ResourceWatcherMock) HasSynced() bool {
-	w.HasSyncedCalled = true
-	return true
-}
-
 func TestK8sWatcher(t *testing.T) {
-	cancelCalled := false
 	w := &K8sWatcher{
-		ctx:       nil,
-		cancel:    func() { cancelCalled = true },
 		opts:      nil,
 		clientset: nil,
 		k8sResources: []r.ResourceWatcher{
@@ -93,7 +78,6 @@ func TestK8sWatcher(t *testing.T) {
 	}
 
 	w.Run()
-
 	for i, rwi := range w.k8sResources {
 		rw := rwi.(*ResourceWatcherMock)
 		if !rw.RunCalled {
@@ -103,7 +87,11 @@ func TestK8sWatcher(t *testing.T) {
 	}
 
 	w.Shutdown()
-	if !cancelCalled {
-		t.Error("watcher.cancel() should have been called")
+	for i, rwi := range w.k8sResources {
+		rw := rwi.(*ResourceWatcherMock)
+		if !rw.ShutdownCalled {
+			t.Errorf("ResourceWatcherMock %v Shutdown() should have been called %#v", i, rw)
+		}
+
 	}
 }

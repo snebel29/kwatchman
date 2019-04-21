@@ -1,7 +1,6 @@
 package watcher
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
@@ -19,8 +18,6 @@ type Watcher interface {
 }
 
 type K8sWatcher struct {
-	ctx          context.Context
-	cancel       context.CancelFunc
 	opts         *cli.CLIArgs
 	clientset    kubernetes.Interface
 	k8sResources []resources.ResourceWatcher
@@ -32,17 +29,15 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
 	return &K8sWatcher{
-		ctx:       ctx,
-		cancel:    cancel,
 		opts:      c,
 		clientset: clientset,
 		// TODO: Make resources configurable by user
-		k8sResources: []resources.ResourceWatcher{resources.NewK8sDeploymentWatcher(ctx)},
+		k8sResources: []resources.ResourceWatcher{resources.NewK8sDeploymentWatcher()},
 	}, nil
 }
 
+// Run start k8s controller for each k8s resource
 func (w *K8sWatcher) Run() error {
 	defer w.Shutdown()
 
@@ -61,7 +56,9 @@ func (w *K8sWatcher) Run() error {
 }
 
 func (w *K8sWatcher) Shutdown() {
-	w.cancel()
+	for _, rw := range w.k8sResources {
+		rw.Shutdown()
+	}
 }
 
 // Returns kubernetes API clientset, depending on the context where kwatchman

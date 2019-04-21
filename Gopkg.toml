@@ -24,6 +24,9 @@
 #   go-tests = true
 #   unused-packages = true
 
+[[constraint]]
+  name = "github.com/snebel29/kooper"
+  version = "v0.5.1-fork"
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
