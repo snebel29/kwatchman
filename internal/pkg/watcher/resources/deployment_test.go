@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"fmt"
 	"testing"
 )
 
@@ -22,5 +21,4 @@ func TestNewK8sDeploymentWatcher(t *testing.T) {
 	if dw.queue == nil {
 		t.Errorf("K8sDeploymentWatcher.queue is not set correctly %#v", dw.queue)
 	}
-	fmt.Printf("%#v", dw.informer)
 }
