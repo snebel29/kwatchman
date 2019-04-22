@@ -22,19 +22,15 @@ import (
 
 type K8sResourceWatcher struct {
 	kind  string
-	hand  handler.Handler
-	retr  retrieve.Retriever
 	stopC chan struct{}
+	ctrl  controller.Controller
 }
 
 func (r *K8sResourceWatcher) Run() error {
 	log.Printf("Run K8sResourceWatcher with kind %v\n", r.kind)
 
-	// Create the controller that will refresh every 30 seconds.
-	ctrl := controller.NewSequential(30*time.Second, r.hand, r.retr, nil, log.New())
-
 	// Start our controller.
-	if err := ctrl.Run(r.stopC); err != nil {
+	if err := r.ctrl.Run(r.stopC); err != nil {
 		return fmt.Errorf("error running controller: %s", err)
 	}
 	return nil
@@ -48,6 +44,8 @@ func (r *K8sResourceWatcher) Shutdown() {
 func NewK8sDeploymentWatcher(clientset kubernetes.Interface) watcher.ResourceWatcher {
 
 	kind := "Deployment"
+	refresh := 30 * time.Second
+	logger := log.New()
 
 	// Our domain logic that will print every add/sync/update and delete event we .
 	retr := &retrieve.Resource{
@@ -75,12 +73,13 @@ func NewK8sDeploymentWatcher(clientset kubernetes.Interface) watcher.ResourceWat
 		},
 	}
 
+	// Create the controller that will refresh every 30 seconds.
+	ctrl := controller.NewSequential(refresh, hand, retr, nil, logger)
 	stopC := make(chan struct{})
 
 	return &K8sResourceWatcher{
 		kind:  kind,
-		hand:  hand,
-		retr:  retr,
+		ctrl:  ctrl,
 		stopC: stopC,
 	}
 }
