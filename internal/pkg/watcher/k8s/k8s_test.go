@@ -1,8 +1,8 @@
-package watcher
+package k8s
 
 import (
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
-	r "github.com/snebel29/kwatchman/internal/pkg/watcher/resources"
+	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"k8s.io/client-go/rest"
 	"os"
 	"path"
@@ -65,8 +65,8 @@ func (w *ResourceWatcherMock) Shutdown() {
 
 func TestK8sWatcher(t *testing.T) {
 	w := &K8sWatcher{
-		opts:      nil,
-		k8sResources: []r.ResourceWatcher{
+		opts: nil,
+		k8sResources: []watcher.ResourceWatcher{
 			&ResourceWatcherMock{},
 			&ResourceWatcherMock{},
 			&ResourceWatcherMock{},

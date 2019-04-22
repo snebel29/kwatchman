@@ -4,13 +4,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
 	"github.com/snebel29/kwatchman/internal/pkg/kwatchman"
-	"github.com/snebel29/kwatchman/internal/pkg/watcher"
+	"github.com/snebel29/kwatchman/internal/pkg/watcher/k8s"
 )
 
 func main() {
 	c := cli.NewCLI()
 	log.Infof("Running kwatchman with %#v", c)
-	w, err := watcher.NewK8sWatcher(c)
+	w, err := k8s.NewK8sWatcher(c)
 	if err != nil {
 		log.Fatal(err)
 	}
