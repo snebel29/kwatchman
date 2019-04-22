@@ -19,7 +19,6 @@ type Watcher interface {
 
 type K8sWatcher struct {
 	opts         *cli.CLIArgs
-	clientset    kubernetes.Interface
 	k8sResources []resources.ResourceWatcher
 }
 
@@ -31,9 +30,8 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 
 	return &K8sWatcher{
 		opts:      c,
-		clientset: clientset,
 		// TODO: Make resources configurable by user
-		k8sResources: []resources.ResourceWatcher{resources.NewK8sDeploymentWatcher()},
+		k8sResources: []resources.ResourceWatcher{resources.NewK8sDeploymentWatcher(clientset)},
 	}, nil
 }
 

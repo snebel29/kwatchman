@@ -47,9 +47,6 @@ func TestNewK8sWatcher(t *testing.T) {
 	if w.opts != c {
 		t.Errorf("K8sWatcher.opts is not set correctly %#v", w.opts)
 	}
-	if w.clientset == nil {
-		t.Errorf("K8sWatcher.clientset is not set correctly %#v", w.clientset)
-	}
 }
 
 type ResourceWatcherMock struct {
@@ -69,7 +66,6 @@ func (w *ResourceWatcherMock) Shutdown() {
 func TestK8sWatcher(t *testing.T) {
 	w := &K8sWatcher{
 		opts:      nil,
-		clientset: nil,
 		k8sResources: []r.ResourceWatcher{
 			&ResourceWatcherMock{},
 			&ResourceWatcherMock{},
