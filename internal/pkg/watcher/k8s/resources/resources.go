@@ -41,6 +41,18 @@ func (r *K8sResourceWatcher) Shutdown() {
 	r.stopC <- struct{}{} //FIX: It's not really stopping the kooper controller
 }
 
+func newK8sResourceWatcher(kind string, hand *handler.HandlerFunc, retr *retrieve.Resource) watcher.ResourceWatcher {
+	// Create the controller that will refresh every 30 seconds.
+	ctrl := newK8sController(hand, retr)
+	stopC := make(chan struct{})
+
+	return &K8sResourceWatcher{
+		kind:  kind,
+		ctrl:  ctrl,
+		stopC: stopC,
+	}
+}
+
 func newK8sController(hand *handler.HandlerFunc, retr *retrieve.Resource) controller.Controller {
 	refresh := 30 * time.Second
 	logger := log.New()
@@ -50,9 +62,6 @@ func newK8sController(hand *handler.HandlerFunc, retr *retrieve.Resource) contro
 func NewK8sDeploymentWatcher(clientset kubernetes.Interface) watcher.ResourceWatcher {
 	kind := "Deployment"
 
-	// Create our retriever so the controller knows how to get/listen for deployment events.
-	// particularly important is to pick the correct api-group and api-version depending on
-	// what k8s versions are you targeting.
 	retr := &retrieve.Resource{
 		Object: &appsv1.Deployment{},
 		ListerWatcher: &cache.ListWatch{
@@ -65,7 +74,6 @@ func NewK8sDeploymentWatcher(clientset kubernetes.Interface) watcher.ResourceWat
 		},
 	}
 
-	// Our domain logic that will be called every add,delete and update event
 	hand := &handler.HandlerFunc{
 		AddFunc: func(_ context.Context, evt *common.K8sEvent) error {
 			obj := evt.Object.(*appsv1.Deployment)
@@ -77,14 +85,5 @@ func NewK8sDeploymentWatcher(clientset kubernetes.Interface) watcher.ResourceWat
 			return nil
 		},
 	}
-
-	// Create the controller that will refresh every 30 seconds.
-	ctrl  := newK8sController(hand, retr)
-	stopC := make(chan struct{})
-
-	return &K8sResourceWatcher{
-		kind:  kind,
-		ctrl:  ctrl,
-		stopC: stopC,
-	}
+	return newK8sResourceWatcher(kind, hand, retr)
 }
