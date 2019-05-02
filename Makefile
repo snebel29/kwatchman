@@ -1,14 +1,24 @@
+SHELL := $(shell which bash)
+
 VERSION=x.x.x-development
 REPOSITORY=github.com/snebel29/kwatchman
+COVERAGE_FILE=/tmp/coverage.out
 LD_FLAGS="-X ${REPOSITORY}/internal/pkg/cli.Version=$(VERSION) -w -extldflags -static"
 
 
 build: deps
 	CGO_ENABLED=0 go build -ldflags $(LD_FLAGS) cmd/*.go
+
 test:
-	go test -v ./...
+	go test ./... -cover
+
+test-coverage-report:
+	go test ./... -coverprofile=$(COVERAGE_FILE)
+	go tool cover -html=$(COVERAGE_FILE)
+
 clean:
 	go clean
+
 deps:
 	dep ensure -v
 
@@ -23,4 +33,4 @@ publish-docker-image:
 	docker push snebel29/kwatchman:$(VERSION)
 	docker push snebel29/kwatchman:latest
 
-.PHONY: build test clean docker-image publish-docker-image
+.PHONY: build test clean docker-image publish-docker-image test-coverage-report
