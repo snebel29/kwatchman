@@ -3,6 +3,7 @@ package k8s
 import (
 	"fmt"
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher/k8s/resources"
 	"k8s.io/client-go/kubernetes"
@@ -26,7 +27,9 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 	return &K8sWatcher{
 		opts: c,
 		// TODO: Make resources configurable by user
-		k8sResources: []watcher.ResourceWatcher{resources.NewK8sDeploymentWatcher(clientset)},
+		k8sResources: []watcher.ResourceWatcher{
+			resources.NewK8sDeploymentWatcher(clientset, handler.LogHandlerFunc),
+		},
 	}, nil
 }
 

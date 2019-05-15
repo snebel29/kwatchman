@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"testing"
 )
@@ -20,5 +21,5 @@ func k8sIndividualResourceWatcherHelper(w watcher.ResourceWatcher, t *testing.T)
 }
 
 func TestK8sDeploymentWatcher(t *testing.T) {
-	k8sIndividualResourceWatcherHelper(NewK8sDeploymentWatcher(nil), t)
+	k8sIndividualResourceWatcherHelper(NewK8sDeploymentWatcher(nil, handler.LogHandlerFunc), t)
 }
