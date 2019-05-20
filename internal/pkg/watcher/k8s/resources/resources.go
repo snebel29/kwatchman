@@ -41,7 +41,7 @@ func NewK8sDeploymentWatcher(
 		if err != nil {
 			return err
 		}
-		if err := f(nil, evt, string(manifest)); err != nil {
+		if err := f(nil, evt, manifest); err != nil {
 			return err
 		}
 		return nil
