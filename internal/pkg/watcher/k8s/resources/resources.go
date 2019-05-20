@@ -35,7 +35,7 @@ func NewK8sDeploymentWatcher(
 		},
 	}
 
-	_f := func(_ context.Context, evt *common.K8sEvent) error {
+	fn := func(_ context.Context, evt *common.K8sEvent) error {
 		obj := evt.Object.(*appsv1.Deployment)
 		manifest, err := json.Marshal(obj)
 		if err != nil {
@@ -48,8 +48,8 @@ func NewK8sDeploymentWatcher(
 	}
 
 	hand := &kooper_handler.HandlerFunc{
-		AddFunc:    _f,
-		DeleteFunc: _f,
+		AddFunc:    fn,
+		DeleteFunc: fn,
 	}
 	return newK8sResourceWatcher(kind, hand, retr)
 }
