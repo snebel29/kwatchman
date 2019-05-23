@@ -10,10 +10,16 @@ import (
 
 type ResourcesHandlerFunc func(context.Context, *common.K8sEvent, []byte) error
 
-func LogHandlerFunc(ctx context.Context, evt *common.K8sEvent, k8sManifest []byte) error {
-	_ = ctx
+// LogHandlerFunc can be used for debugging, troubleshooting and testing
+func LogHandlerFunc(_ context.Context, evt *common.K8sEvent, k8sManifest []byte) error {
+	log.Infof("Added: %v %s\n", evt.HasSynced, prettyPrintJSON(k8sManifest))
+	//TODO: Fix returning error cause kwatch to panic
+	//return fmt.Errorf("Erroooor %v", nil)
+	return nil
+}
+
+func prettyPrintJSON(k8sManifest []byte) string {
 	var indented bytes.Buffer
 	json.Indent(&indented, k8sManifest, "", " ")
-	log.Infof("Added: %v %s\n", evt.HasSynced, &indented)
-	return nil
+	return indented.String()
 }
