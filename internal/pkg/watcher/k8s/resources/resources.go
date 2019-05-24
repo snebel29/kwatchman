@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/snebel29/kooper/operator/common"
+	kooper "github.com/snebel29/kooper/operator/common"
 	kooper_handler "github.com/snebel29/kooper/operator/handler"
 	"github.com/snebel29/kooper/operator/retrieve"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
@@ -35,7 +35,7 @@ func NewK8sDeploymentWatcher(
 		},
 	}
 
-	fn := func(_ context.Context, evt *common.K8sEvent) error {
+	fn := func(_ context.Context, evt *kooper.K8sEvent) error {
 		obj := evt.Object.(*appsv1.Deployment)
 		manifest, err := json.Marshal(obj)
 		if err != nil {
