@@ -14,12 +14,12 @@ type ResourcesHandlerFunc func(context.Context, *common.K8sEvent, []byte) error
 
 // LogHandlerFunc can be used for debugging, troubleshooting and testing
 func LogHandlerFunc(_ context.Context, evt *common.K8sEvent, k8sManifest []byte) error {
-	log.Infof(prettyPrintJSON(k8sManifest))
+	log.Infof(string(prettyPrintJSON(k8sManifest)))
 	return nil
 }
 
-func prettyPrintJSON(k8sManifest []byte) string {
+func prettyPrintJSON(k8sManifest []byte) []byte {
 	var indented bytes.Buffer
 	json.Indent(&indented, k8sManifest, "", " ")
-	return indented.String()
+	return []byte(indented.String())
 }
