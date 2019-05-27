@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -36,13 +37,16 @@ func NewK8sDeploymentWatcher(
 	}
 
 	fn := func(_ context.Context, evt *kooper.K8sEvent) error {
-		obj := evt.Object.(*appsv1.Deployment)
-		manifest, err := json.Marshal(obj)
-		if err != nil {
-			return err
-		}
-		if err := f(nil, evt, manifest); err != nil {
-			return err
+		if obj, ok := evt.Object.(*appsv1.Deployment); ok {
+			manifest, err := json.Marshal(obj)
+			if err != nil {
+				return err
+			}
+			if err := f(nil, evt, manifest); err != nil {
+				return err
+			}
+		} else {
+			log.Warnf("runtime.Object is not of type (*appsv1.Deployment) but %T instead", obj)
 		}
 		return nil
 	}
