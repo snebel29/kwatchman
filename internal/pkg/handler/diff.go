@@ -36,7 +36,7 @@ type k8sObject struct {
 	Kind       string            `json:"kind"`
 	Metadata   k8sObjectMetadata `json:"metadata"`
 	Spec       interface{}       `json:"spec"`
-	status     interface{}       `json:"-"` // status will be omitted by json.Marshal
+	Status     interface{}       `json:"-"` // status will be omitted by json.Marshal
 }
 
 // cleanK8sManifest cleans metadata information and indent the manifest in preparation for text
@@ -59,22 +59,22 @@ func cleanK8sManifest(manifest []byte) ([]byte, error) {
 }
 
 // DiffFunc spits out the differentce between two []byte - normally k8s manifests
-// and is supposed to be the base function handler for resource watchers
+// this function is normally the base function handler for resource watchers
 func DiffFunc(_ context.Context, evt *common.K8sEvent, k8sManifest []byte) error {
 	s := newStorage()
 	cleanedManifest, err := cleanK8sManifest(k8sManifest)
+
 	if err != nil {
 		return err
 	}
 
 	if text, ok := s[evt.Key]; ok && evt.HasSynced {
-
 		diff, err := diffTextLines(text, cleanedManifest)
 		if err != nil {
 			log.Error(err.Error())
 		} else {
 			if len(diff) > 0 {
-				log.Warnf("%s | %s\n%s", evt.Key, evt.Kind, diff)
+				log.Infof("%s | %s\n%s", evt.Key, evt.Kind, diff)
 			}
 		}
 	}
@@ -108,6 +108,7 @@ func createTempFile(content []byte) (string, error) {
 }
 
 func diffTextLines(text1, text2 []byte) ([]byte, error) {
+	// TODO: This function is coupled with POSIX diff command
 	file1, err := createTempFile(text1)
 	if err != nil {
 		return nil, err
