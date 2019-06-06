@@ -1,6 +1,8 @@
 SHELL := $(shell which bash)
 
-VERSION=x.x.x-development
+CONTAINER_USER ?= kwatchman
+VERSION        ?= x.x.x-development
+
 REPOSITORY=github.com/snebel29/kwatchman
 COVERAGE_FILE=/tmp/coverage.out
 LD_FLAGS="-X ${REPOSITORY}/internal/pkg/cli.Version=$(VERSION) -w -extldflags -static"
@@ -26,10 +28,11 @@ docker-image:
 	docker build -f build/Dockerfile \
 		--build-arg VERSION=$(VERSION) \
 		--build-arg REPOSITORY=$(REPOSITORY) \
+		--build-arg CONTAINER_USER=$(CONTAINER_USER) \
 		-t snebel29/kwatchman:latest \
 		-t snebel29/kwatchman:$(VERSION) .
 
-publish-docker-image:
+push-docker-image:
 	docker push snebel29/kwatchman:$(VERSION)
 	docker push snebel29/kwatchman:latest
 
