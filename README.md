@@ -1,6 +1,6 @@
 # Kwatchman
 
-Watch for k8s workload resources and notify changes on Slack
+Watch for k8s workload resources and notify changes on Instant Messaging services
 
 >  :warning: The production go code is still a working in progress
 
