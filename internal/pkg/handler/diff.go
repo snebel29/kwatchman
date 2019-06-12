@@ -12,7 +12,11 @@ import (
 )
 
 var (
-	singleton storage
+	singleton          storage
+	AnnotationsToClean = []string{
+		"deployment.kubernetes.io/revision",
+		"kubectl.kubernetes.io/last-applied-configuration",
+	}
 )
 
 type storage map[string][]byte
@@ -39,6 +43,19 @@ type k8sObject struct {
 	Status     interface{}       `json:"-"` // status will be omitted by json.Marshal
 }
 
+func filterMapByKey(m map[string]string, toFilter []string) {
+	for _, k := range toFilter {
+		delete(m, k)
+	}
+}
+
+func cleanAnnotations(obj *k8sObject) {
+	filterMapByKey(
+		obj.Metadata.Annotations,
+		AnnotationsToClean,
+	)
+}
+
 // cleanK8sManifest cleans metadata information and indent the manifest in preparation for text
 // comparisons
 func cleanK8sManifest(manifest []byte) ([]byte, error) {
@@ -48,6 +65,8 @@ func cleanK8sManifest(manifest []byte) ([]byte, error) {
 		log.Error(err)
 		return nil, err
 	}
+
+	cleanAnnotations(obj)
 
 	_cleanK8sManifest, err := json.Marshal(obj)
 	if err != nil {

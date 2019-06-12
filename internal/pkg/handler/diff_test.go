@@ -8,6 +8,7 @@ import (
 	log_test "github.com/sirupsen/logrus/hooks/test"
 	"github.com/snebel29/kooper/operator/common"
 	"io/ioutil"
+	"reflect"
 	"runtime"
 	"testing"
 )
@@ -36,7 +37,8 @@ func TestCleanK8sManifest(t *testing.T) {
 		  "kind": "",
 		  "metadata": {
 			"generation":2,
-			"resourceVersion":"267844584"
+			"resourceVersion":"267844584",
+			"annotations":{"deployment.kubernetes.io/revision": "1"}
 		  },
 		  "spec": {},
 		  "status": {}
@@ -53,6 +55,9 @@ func TestCleanK8sManifest(t *testing.T) {
 	}
 	if obj.Status != nil {
 		t.Errorf("status should be nil, got %#v instead", obj.Status)
+	}
+	if !reflect.DeepEqual(obj.Metadata.Annotations, map[string]string{}) {
+		t.Errorf("Metadata.Annotations should be nil, got %#v instead", obj.Metadata.Annotations)
 	}
 }
 
@@ -138,5 +143,33 @@ func TestCreateTempFile(t *testing.T) {
 	_content, _ := ioutil.ReadFile(name)
 	if !bytes.Equal(content, _content) {
 		t.Error("File content mismatch")
+	}
+}
+
+func TestCleanAnnotations(t *testing.T) {
+	obj := &k8sObject{}
+	m1 := make(map[string]string)
+
+	for _, annotation := range AnnotationsToClean {
+		m1[annotation] = "whatever"
+	}
+
+	obj.Metadata.Annotations = m1
+	cleanAnnotations(obj)
+
+	m2 := map[string]string{}
+
+	if !reflect.DeepEqual(m1, m2) {
+		t.Errorf("k8sObject Annotations should be clean!, got %#v instead", m1)
+	}
+}
+
+func TestFilterMapByKey(t *testing.T) {
+	m1 := map[string]string{"a": "1", "b": "2", "c": "3"}
+	toFilter := []string{"a", "c", "z"}
+	filterMapByKey(m1, toFilter)
+	m2 := map[string]string{"b": "2"}
+	if !reflect.DeepEqual(m1, m2) {
+		t.Errorf("Maps should match, %#v != %#v", m1, m2)
 	}
 }
