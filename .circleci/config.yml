@@ -1,0 +1,44 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.11
+
+    working_directory: /go/src/github.com/snebel29/kwatchman
+    steps:
+      - checkout
+
+      - run: make test
+      - run: make build
+
+  release:
+    docker:
+      - image: circleci/golang:1.11
+
+    working_directory: /go/src/github.com/snebel29/kwatchman
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      - checkout
+
+      - run: echo "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin
+      - run: make VERSION=${CIRCLE_TAG} docker-image
+      - run: make VERSION=${CIRCLE_TAG} push-docker-image
+
+workflows:
+  version: 2
+  build-and-release:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - release:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v\d\.\d\.\d.*$/
+            branches:
+              ignore: /.*/
