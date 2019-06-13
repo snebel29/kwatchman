@@ -15,7 +15,11 @@ func TestPrettyPrintJSON(t *testing.T) {
 	LogHandlerFunc(nil, &common.K8sEvent{}, manifest)
 	m := hook.LastEntry().Message
 
-	if m != string(prettyPrintJSON([]byte(s))) {
+	_json, err := prettyPrintJSON([]byte(s))
+	if err != nil {
+		t.Error(err)
+	}
+	if m != string(_json) {
 		t.Errorf("%s should match %s", m, s)
 	}
 }
