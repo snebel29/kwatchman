@@ -74,32 +74,41 @@ func cleanK8sManifest(manifest []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return prettyPrintJSON(_cleanK8sManifest), nil
+	_json, err := prettyPrintJSON(_cleanK8sManifest)
+	if err != nil {
+		return nil, err
+	}
+	return _json, nil
 }
 
 // DiffFunc spits out the differentce between two []byte - normally k8s manifests
 // this function is normally the base function handler for resource watchers
-func DiffFunc(_ context.Context, evt *common.K8sEvent, k8sManifest []byte) error {
+func DiffFunc(ctx context.Context, evt *common.K8sEvent, k8sManifest []byte) ([]byte, bool, error) {
+	ctx = nil
 	s := newStorage()
 	cleanedManifest, err := cleanK8sManifest(k8sManifest)
 
 	if err != nil {
-		return err
+		return nil, false, err
 	}
 
+	var diff []byte
+	nextRun := false
+
 	if text, ok := s[evt.Key]; ok && evt.HasSynced {
-		diff, err := diffTextLines(text, cleanedManifest)
+		diff, err = diffTextLines(text, cleanedManifest)
 		if err != nil {
 			log.Error(err.Error())
 		} else {
 			if len(diff) > 0 {
 				log.Infof("%s | %s\n%s", evt.Key, evt.Kind, diff)
+				nextRun = true
 			}
 		}
 	}
 
 	s[evt.Key] = cleanedManifest
-	return nil
+	return diff, nextRun, nil
 }
 
 func newStorage() storage {

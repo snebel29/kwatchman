@@ -21,5 +21,6 @@ func k8sIndividualResourceWatcherHelper(w watcher.ResourceWatcher, t *testing.T)
 }
 
 func TestK8sDeploymentWatcher(t *testing.T) {
-	k8sIndividualResourceWatcherHelper(NewK8sDeploymentWatcher(nil, handler.LogHandlerFunc), t)
+	chainOfHandlers := handler.NewChainOfHandlers(handler.LogHandlerFunc)
+	k8sIndividualResourceWatcherHelper(NewK8sDeploymentWatcher(nil, chainOfHandlers), t)
 }

@@ -21,7 +21,7 @@ import (
 
 func NewK8sDeploymentWatcher(
 	clientset kubernetes.Interface,
-	f handler.ResourcesHandlerFunc) watcher.ResourceWatcher {
+	chainOfHandlers handler.ChainOfHandlers) watcher.ResourceWatcher {
 
 	kind := "Deployment"
 	retr := &retrieve.Resource{
@@ -42,7 +42,7 @@ func NewK8sDeploymentWatcher(
 			if err != nil {
 				return err
 			}
-			if err := f(nil, evt, manifest); err != nil {
+			if err := chainOfHandlers.Run(nil, evt, manifest); err != nil {
 				return err
 			}
 		} else {
