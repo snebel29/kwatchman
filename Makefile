@@ -28,20 +28,19 @@ deps:
 
 docker-image:
 
-ifeq ($(shell echo $(VERSION) | egrep "$(STABLE_VERSION_REGEX)"),)
-	@echo "Version $(VERSION) is not stable"
-	TAG_LATEST=""
-else
-	@echo "Version $(VERSION) is stable therefore tag latest"
-	TAG_LATEST="-t snebel29/kwatchman:latest"
-endif
-
 	docker build -f build/Dockerfile \
 		--build-arg VERSION=$(VERSION) \
 		--build-arg REPOSITORY=$(REPOSITORY) \
 		--build-arg CONTAINER_USER=$(CONTAINER_USER) \
-		$(TAG_LATEST) \
 		-t snebel29/kwatchman:$(VERSION) .
+
+ifeq ($(shell echo $(VERSION) | egrep "$(STABLE_VERSION_REGEX)"),)
+	@echo "Version $(VERSION) is not stable"
+
+else
+	@echo "Version $(VERSION) is stable therefore tag latest"
+	docker tag snebel29/kwatchman:$(VERSION) snebel29/kwatchman:latest
+endif
 
 	docker image prune -f
 
