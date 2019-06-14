@@ -76,7 +76,7 @@ func TestDiffFuncLogEntryIfthereIsDifferences(t *testing.T) {
 	diff, nextRun, err := DiffFunc(context.TODO(), &common.K8sEvent{
 		Key:       key,
 		HasSynced: true,
-		Kind:      "Update",
+		Kind:      "Add",
 		Object:    nil,
 	}, []byte("{\"kind\": \"fakeKind\"}\n"))
 
@@ -100,6 +100,7 @@ func TestDiffFuncLogEntryIfthereIsDifferences(t *testing.T) {
 		t.Errorf("Logging lastEntry should be nil")
 	}
 
+	// In this case a difference should be raised
 	diff, nextRun, err = DiffFunc(context.TODO(), &common.K8sEvent{
 		Key:       key,
 		HasSynced: true,
@@ -107,10 +108,11 @@ func TestDiffFuncLogEntryIfthereIsDifferences(t *testing.T) {
 		Object:    nil,
 	}, []byte("{\"kind\": \"fakeKindDifferentThanPrevious\"}\n"))
 
-	if len(diff) > 0 {
+	if len(diff) < 1 {
 		t.Error("there should be some difference")
 	}
 
+	// Because differences trigger next handler
 	if nextRun != true {
 		t.Error("nextRun should be true")
 	}
