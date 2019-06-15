@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	log_test "github.com/sirupsen/logrus/hooks/test"
 	"github.com/snebel29/kooper/operator/common"
 	"reflect"
 	"testing"
@@ -12,18 +11,15 @@ import (
 // This test case effectively test both LogHandlerFunc and prettyPrintJSON
 func TestPrettyPrintJSON(t *testing.T) {
 
-	hook := log_test.NewGlobal()
-	s := "{\"a\": 1}"
-	manifest := []byte(s)
-	LogHandlerFunc(nil, &common.K8sEvent{}, manifest)
-	m := hook.LastEntry().Message
+	arg := "{\"a\": 1}"
+	expected := "{\n \"a\": 1\n}"
 
-	_json, err := prettyPrintJSON([]byte(s))
+	returned, err := prettyPrintJSON([]byte(arg))
 	if err != nil {
 		t.Error(err)
 	}
-	if m != string(_json) {
-		t.Errorf("%s should match %s", m, s)
+	if expected != string(returned) {
+		t.Errorf("%s should match %s", expected, string(returned))
 	}
 }
 

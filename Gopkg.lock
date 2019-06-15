@@ -175,6 +175,14 @@
   revision = "fe629955684802399c46e2a8e9aeecc4459d2923"
 
 [[projects]]
+  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
+
+[[projects]]
   branch = "master"
   digest = "1:b4395b2a4566c24459af3d04009b39cc21762fc77ec7bf7a1aa905c91e8f018d"
   name = "github.com/gregjones/httpcache"
@@ -243,6 +251,17 @@
   pruneopts = "UT"
   revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
   version = "1.0.1"
+
+[[projects]]
+  digest = "1:7711bc85fa91b919713feda232ffe0bd4ebb0e8426b9c0de6c6f476e0eb9b7c2"
+  name = "github.com/nlopes/slack"
+  packages = [
+    ".",
+    "slackutilsx",
+  ]
+  pruneopts = "UT"
+  revision = "a7deeca7935c178aa865249bab511daf816288ba"
+  version = "v0.5.0"
 
 [[projects]]
   digest = "1:11e62d6050198055e6cd87ed57e5d8c669e84f839c16e16f192374d913d1a70d"
@@ -667,6 +686,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/bouk/monkey",
+    "github.com/nlopes/slack",
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",
     "github.com/sirupsen/logrus/hooks/test",
