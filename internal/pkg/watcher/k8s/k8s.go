@@ -24,7 +24,7 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 		return nil, err
 	}
 
-	chainOfHandlers := handler.NewChainOfHandlers(handler.DiffFunc)
+	chainOfHandlers := handler.NewChainOfHandlers(handler.DiffFunc, handler.SendToSlackFunc)
 	return &K8sWatcher{
 		opts: c,
 		// TODO: Make resources configurable by user
