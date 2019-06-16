@@ -9,16 +9,18 @@ import (
 func TestLogHandlerFunc(t *testing.T) {
 
 	hook := log_test.NewGlobal()
-	s := "{\"a\": 1}"
-	manifest := []byte(s)
-	LogHandlerFunc(nil, &common.K8sEvent{}, manifest)
+	manifest := []byte("{\"a\": 1}")
+	LogHandlerFunc(
+		nil,
+		Input{
+			Evt:         &common.K8sEvent{},
+			K8sManifest: manifest,
+			Payload:     []byte{},
+		})
 	m := hook.LastEntry().Message
 
-	_json, err := prettyPrintJSON([]byte(s))
-	if err != nil {
-		t.Error(err)
-	}
-	if m != string(_json) {
-		t.Errorf("%s should match %s", m, s)
+	expected := "&common.K8sEvent{Key:\"\", HasSynced:false, Object:runtime.Object(nil), Kind:\"\"} {\n \"a\": 1\n} "
+	if m != expected {
+		t.Errorf("%s should match %s", m, expected)
 	}
 }

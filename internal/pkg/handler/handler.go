@@ -8,10 +8,24 @@ import (
 	"github.com/snebel29/kooper/operator/common"
 )
 
-type ResourcesHandlerFunc func(context.Context, *common.K8sEvent, []byte) (payload []byte, runNext bool, err error)
+type ResourcesHandlerFunc func(context.Context, Input) (Output, error)
+
+// Input holds the input data for any handler
+type Input struct {
+	Evt         *common.K8sEvent
+	K8sManifest []byte
+	Payload     []byte //This is a free field that can hold, anything such as text, images, etc
+}
+
+// Ouput holds the output data from any handler execution
+type Output struct {
+	K8sManifest []byte
+	Payload     []byte //This is a free field that can hold, anything such as text, images, etc
+	RunNext     bool
+}
 
 type ChainOfHandlers interface {
-	Run(ctx context.Context, evt *common.K8sEvent, k8sManifest []byte) error
+	Run(ctx context.Context, input Input) error
 }
 
 // chainOfHandlers holds a list of ResourcesHandlerFunc that can be exexcute sequencially
@@ -19,19 +33,22 @@ type chainOfHandlers struct {
 	handlers []ResourcesHandlerFunc
 }
 
-// Run will run each handler one after other, the handler itself is responsible to decide
+// Run will execute each handler one after the other, the handler itself is responsible to decide
 // whether the next handler should be executed or not
-func (c *chainOfHandlers) Run(ctx context.Context, evt *common.K8sEvent, k8sManifest []byte) error {
-	toSend := k8sManifest
+func (c *chainOfHandlers) Run(ctx context.Context, input Input) error {
+	toSend := input.K8sManifest
+	payload := input.Payload
+
 	for i, f := range c.handlers {
-		payload, runNext, err := f(ctx, evt, toSend)
+		output, err := f(ctx, Input{Evt: input.Evt, K8sManifest: toSend, Payload: payload})
 		if err != nil {
 			return errors.Wrapf(err, "The %d function failed within chainOfHandlers run()", i)
 		}
-		if !runNext {
+		if !output.RunNext {
 			break
 		}
-		toSend = payload
+		toSend = output.K8sManifest
+		payload = output.Payload
 	}
 	return nil
 }

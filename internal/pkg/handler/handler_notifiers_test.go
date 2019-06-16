@@ -25,14 +25,18 @@ func TestSlackNotifier(t *testing.T) {
 	m := &MockNotifier{}
 	s.notify = m.notify
 	p := []byte{}
-	payload, runNext, err := s.Send(nil, &common.K8sEvent{}, p)
+	output, err := s.Send(nil, Input{
+		Evt:         &common.K8sEvent{},
+		K8sManifest: []byte{},
+		Payload:     p,
+	})
 	if err != nil {
 		t.Error("No error should have been returned")
 	}
-	if !reflect.DeepEqual(payload, p) {
+	if !reflect.DeepEqual(output.Payload, p) {
 		t.Error("Returned payload should match with sent one")
 	}
-	if runNext != true {
+	if output.RunNext != true {
 		t.Error("Successfull execution should runNext")
 	}
 	if m.called == false {

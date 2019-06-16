@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
-	"github.com/snebel29/kooper/operator/common"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -81,34 +80,44 @@ func cleanK8sManifest(manifest []byte) ([]byte, error) {
 	return _json, nil
 }
 
-// DiffFunc spits out the differentce between two []byte - normally k8s manifests
+// DiffFunc spits out the differentce between previous versions of K8sManifest
 // this function is normally the base function handler for resource watchers
-func DiffFunc(ctx context.Context, evt *common.K8sEvent, k8sManifest []byte) ([]byte, bool, error) {
+// because filters noise by cleaning metadata consolidating logical changes
+// from the user perspective, output returns the cleaned manifest and the diff is
+// returned in the payload
+func DiffFunc(ctx context.Context, input Input) (Output, error) {
+	//TODO: Should cleaning manifest be extracted from DiffFunc into its own Handler?
 	ctx = nil
 	s := newStorage()
-	cleanedManifest, err := cleanK8sManifest(k8sManifest)
+	cleanedManifest, err := cleanK8sManifest(input.K8sManifest)
 
 	if err != nil {
-		return nil, false, err
+		return Output{
+			K8sManifest: input.K8sManifest,
+			Payload:     input.Payload,
+			RunNext:     false}, err
 	}
 
 	var diff []byte
 	nextRun := false
 
-	if text, ok := s[evt.Key]; ok && evt.HasSynced {
+	if text, ok := s[input.Evt.Key]; ok && input.Evt.HasSynced {
 		diff, err = diffTextLines(text, cleanedManifest)
 		if err != nil {
 			log.Error(err.Error())
 		} else {
 			if len(diff) > 0 {
-				log.Infof("%s | %s\n%s", evt.Key, evt.Kind, diff)
+				log.Infof("%s | %s\n%s", input.Evt.Key, input.Evt.Kind, diff)
 				nextRun = true
 			}
 		}
 	}
 
-	s[evt.Key] = cleanedManifest
-	return diff, nextRun, nil
+	s[input.Evt.Key] = cleanedManifest
+	return Output{
+		K8sManifest: cleanedManifest,
+		Payload:     diff,
+		RunNext:     nextRun}, nil
 }
 
 func newStorage() storage {

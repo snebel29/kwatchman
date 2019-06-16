@@ -42,7 +42,12 @@ func NewK8sDeploymentWatcher(
 			if err != nil {
 				return err
 			}
-			if err := chainOfHandlers.Run(nil, evt, manifest); err != nil {
+			err = chainOfHandlers.Run(nil, handler.Input{
+				Evt:         evt,
+				K8sManifest: manifest,
+				Payload:     []byte{},
+			})
+			if err != nil {
 				return err
 			}
 		} else {
