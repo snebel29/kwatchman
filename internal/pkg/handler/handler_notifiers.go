@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"github.com/snebel29/kooper/operator/common"
 	"github.com/snebel29/kwatchman/internal/pkg/handler/slack"
 )
 
@@ -22,10 +21,16 @@ func NewSlackNotifier(clusterName string) *notifier {
 	}
 }
 
-func (n *notifier) Send(_ context.Context, evt *common.K8sEvent, payload []byte) ([]byte, bool, error) {
-	err := n.notify(evt.Kind, evt.Key, n.clusterName, string(payload))
+func (n *notifier) Send(ctx context.Context, input Input) (Output, error) {
+	err := n.notify(input.Evt.Kind, input.Evt.Key, n.clusterName, string(input.Payload))
 	if err != nil {
-		return []byte{}, false, err
+		return Output{
+			K8sManifest: input.K8sManifest,
+			Payload:     input.Payload,
+			RunNext:     false}, err
 	}
-	return payload, true, err
+	return Output{
+		K8sManifest: input.K8sManifest,
+		Payload:     input.Payload,
+		RunNext:     true}, err
 }

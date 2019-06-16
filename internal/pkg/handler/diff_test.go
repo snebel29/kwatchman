@@ -73,18 +73,26 @@ func TestDiffFuncLogEntryIfthereIsDifferences(t *testing.T) {
 
 	// Fake JSON struct must have some common fields with k8sObject struct
 	// In order to unmarshal the differences
-	diff, nextRun, err := DiffFunc(context.TODO(), &common.K8sEvent{
-		Key:       key,
-		HasSynced: true,
-		Kind:      "Add",
-		Object:    nil,
-	}, []byte("{\"kind\": \"fakeKind\"}\n"))
+	output, err := DiffFunc(
+		context.TODO(),
+		Input{
+			Evt: &common.K8sEvent{
+				Key:       key,
+				HasSynced: true,
+				Kind:      "Add",
+				Object:    nil,
+			},
+			K8sManifest: []byte("{\"kind\": \"fakeKind\"}\n"),
+			Payload:     []byte{},
+		},
+	)
 
+	diff := output.Payload
 	if reflect.DeepEqual(diff, []byte{}) {
 		t.Error("diff should be empty")
 	}
 
-	if nextRun != false {
+	if output.RunNext != false {
 		t.Error("nextRun should be false")
 	}
 
@@ -101,19 +109,27 @@ func TestDiffFuncLogEntryIfthereIsDifferences(t *testing.T) {
 	}
 
 	// In this case a difference should be raised
-	diff, nextRun, err = DiffFunc(context.TODO(), &common.K8sEvent{
-		Key:       key,
-		HasSynced: true,
-		Kind:      "Update",
-		Object:    nil,
-	}, []byte("{\"kind\": \"fakeKindDifferentThanPrevious\"}\n"))
+	output, err = DiffFunc(
+		context.TODO(),
+		Input{
+			Evt: &common.K8sEvent{
+				Key:       key,
+				HasSynced: true,
+				Kind:      "Update",
+				Object:    nil,
+			},
+			K8sManifest: []byte("{\"kind\": \"fakeKindDifferentThanPrevious\"}\n"),
+			Payload:     []byte{},
+		},
+	)
 
+	diff = output.Payload
 	if len(diff) < 1 {
 		t.Error("there should be some difference")
 	}
 
 	// Because differences trigger next handler
-	if nextRun != true {
+	if output.RunNext != true {
 		t.Error("nextRun should be true")
 	}
 

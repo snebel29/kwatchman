@@ -30,17 +30,23 @@ type MockHandler struct {
 	passedContext context.Context
 }
 
-func (h *MockHandler) dummyHandlerFunc(ctx context.Context, evt *common.K8sEvent, payload []byte) ([]byte, bool, error) {
+func (h *MockHandler) dummyHandlerFunc(ctx context.Context, input Input) (Output, error) {
 	h.called = true
-	h.passedPayload = payload
-	h.passedEvent = evt
+	h.passedPayload = input.Payload
+	h.passedEvent = input.Evt
 	h.passedContext = ctx
 
-	return payload, true, nil
+	return Output{
+		K8sManifest: input.K8sManifest,
+		Payload:     input.Payload,
+		RunNext:     true}, nil
 }
 
-func (h *MockHandler) dummyHandlerFuncThatReturnError(ctx context.Context, evt *common.K8sEvent, payload []byte) ([]byte, bool, error) {
-	return []byte{}, false, fmt.Errorf("dummy error")
+func (h *MockHandler) dummyHandlerFuncThatReturnError(ctx context.Context, input Input) (Output, error) {
+	return Output{
+		K8sManifest: input.K8sManifest,
+		Payload:     input.Payload,
+		RunNext:     false}, fmt.Errorf("dummy error")
 }
 
 func NewHandler() *MockHandler {
@@ -53,9 +59,15 @@ func TestChainOfHandlers_Run(t *testing.T) {
 	ch := NewChainOfHandlers(h1.dummyHandlerFunc, h2.dummyHandlerFunc, h1.dummyHandlerFuncThatReturnError)
 
 	evt := &common.K8sEvent{}
+	manifest := []byte("manifest")
 	payload := []byte("payload")
 
-	err := ch.Run(context.TODO(), evt, payload)
+	err := ch.Run(context.TODO(), Input{
+		Evt:         evt,
+		K8sManifest: manifest,
+		Payload:     payload,
+	})
+
 	if err == nil {
 		t.Error("Last handler function should have returned an error")
 	}
