@@ -36,3 +36,7 @@ func TestTruncate(t *testing.T) {
 		}
 	}
 }
+
+func TestMsgToSlack(t *testing.T) {
+	//TODO: We need to mock nslopes/slack
+}
