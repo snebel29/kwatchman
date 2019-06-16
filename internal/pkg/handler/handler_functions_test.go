@@ -22,7 +22,3 @@ func TestLogHandlerFunc(t *testing.T) {
 		t.Errorf("%s should match %s", m, s)
 	}
 }
-
-func TestSendToSlackFunc(t *testing.T) {
-
-}
