@@ -38,7 +38,7 @@ func truncateString(text string, limit int) string {
 	return string(runes[:limit])
 }
 
-func MsgToSlack(kind, objKey, payload string) error {
+func MsgToSlack(kind, objKey, clusterName, payload string) error {
 	title := fmt.Sprintf("%s %s", strings.ToUpper(kind), objKey)
 	// From Aug-2018 Slack requires text field to be under 4000 characters
 	// https://api.slack.com/changelog/2018-04-truncating-really-long-messages
@@ -52,6 +52,7 @@ func MsgToSlack(kind, objKey, payload string) error {
 		AuthorName: "snebel29/kwatchman",
 		AuthorLink: "https://github.com/snebel29/kwatchman",
 		Text:       payload,
+		Footer:     clusterName,
 		Ts:         json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
 	}
 	msg := slack.WebhookMessage{

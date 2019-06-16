@@ -12,7 +12,7 @@ type MockNotifier struct {
 	returnError bool
 }
 
-func (m *MockNotifier) notify(kind, key, payload string) error {
+func (m *MockNotifier) notify(kind, key, clusterName, payload string) error {
 	m.called = true
 	if m.returnError {
 		return errors.New("fake error")
@@ -21,7 +21,7 @@ func (m *MockNotifier) notify(kind, key, payload string) error {
 }
 
 func TestSlackNotifier(t *testing.T) {
-	s := NewSlackNotifier()
+	s := NewSlackNotifier("clusterName")
 	m := &MockNotifier{}
 	s.notify = m.notify
 	p := []byte{}
