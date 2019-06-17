@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
@@ -61,22 +62,21 @@ func cleanK8sManifest(manifest []byte) ([]byte, error) {
 	obj := &k8sObject{}
 
 	if err := json.Unmarshal(manifest, obj); err != nil {
-		log.Error(err)
-		return nil, err
+		return nil, errors.Wrap(err, "cleanK8sManifest Unmarshal")
 	}
 
 	cleanAnnotations(obj)
 
 	_cleanK8sManifest, err := json.Marshal(obj)
 	if err != nil {
-		log.Error(err)
-		return nil, err
+		return nil, errors.Wrap(err, "cleanK8sManifest Marshal")
 	}
 
 	_json, err := prettyPrintJSON(_cleanK8sManifest)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "cleanK8sManifest prettyPrintJSON")
 	}
+
 	return _json, nil
 }
 
