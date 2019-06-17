@@ -358,7 +358,7 @@
   version = "v1.4.1"
 
 [[projects]]
-  digest = "1:e25d5e3d9a88cad6bfa093dcde691d726bd48caeed83498198a687a7bdb64b65"
+  digest = "1:a1cf05ea64d6e421c4a51dbd0c71f273d04a515cea3e1b75ce5b3abd36dfb5f2"
   name = "github.com/snebel29/kooper"
   packages = [
     "log",
@@ -370,8 +370,8 @@
     "operator/retrieve",
   ]
   pruneopts = "UT"
-  revision = "7b7db0d3c027597aa6c7316a44e69f5dceed08ac"
-  version = "v0.5.1-fork"
+  revision = "afd18a1e9ef195c3dce5cb5435556553728a9122"
+  version = "v0.6.0-fork-0.1.0"
 
 [[projects]]
   digest = "1:c1b1102241e7f645bc8e0c22ae352e8f0dc6484b6cb4d132fa9f24174e0119e2"

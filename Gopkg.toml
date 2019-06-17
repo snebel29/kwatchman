@@ -26,7 +26,7 @@
 
 [[constraint]]
   name = "github.com/snebel29/kooper"
-  version = "v0.5.1-fork"
+  version = "v0.6.0-fork-0.1.0"
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
