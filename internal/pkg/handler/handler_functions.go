@@ -14,7 +14,8 @@ func LogHandlerFunc(ctx context.Context, input Input) (Output, error) {
 		input.K8sManifest = _json
 	}
 
-	log.Infof("%#v %s %s", input.Evt, string(input.K8sManifest), string(input.Payload))
+	log.Infof("%#v %s", input.Evt, string(input.Payload))
+	log.Debugf("%s", string(input.K8sManifest))
 
 	return Output{
 		K8sManifest: input.K8sManifest,

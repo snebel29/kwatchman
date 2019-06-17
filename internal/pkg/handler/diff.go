@@ -89,8 +89,19 @@ func DiffFunc(ctx context.Context, input Input) (Output, error) {
 	//TODO: Should cleaning manifest be extracted from DiffFunc into its own Handler?
 	ctx = nil
 	s := newStorage()
-	cleanedManifest, err := cleanK8sManifest(input.K8sManifest)
 
+	if input.Evt.Kind == "Delete" {
+		delete(s, input.Evt.Key)
+
+		return Output{
+			K8sManifest: input.K8sManifest,
+			Payload:     input.Payload,
+			RunNext:     false, // Delete events won't be handled from now on
+		}, nil
+	}
+
+	// Only diff if event is Update
+	cleanedManifest, err := cleanK8sManifest(input.K8sManifest)
 	if err != nil {
 		return Output{
 			K8sManifest: input.K8sManifest,
@@ -101,15 +112,18 @@ func DiffFunc(ctx context.Context, input Input) (Output, error) {
 	var diff []byte
 	nextRun := false
 
-	if text, ok := s[input.Evt.Key]; ok && input.Evt.HasSynced {
-		diff, err = diffTextLines(text, cleanedManifest)
+	if storedManifest, ok := s[input.Evt.Key]; ok && input.Evt.HasSynced {
+		diff, err = diffTextLines(storedManifest, cleanedManifest)
 		if err != nil {
-			log.Error(err.Error())
-		} else {
-			if len(diff) > 0 {
-				log.Infof("%s | %s\n%s", input.Evt.Key, input.Evt.Kind, diff)
-				nextRun = true
-			}
+			return Output{
+				K8sManifest: input.K8sManifest,
+				Payload:     input.Payload,
+				RunNext:     false}, errors.Wrap(err, "diffTextLines")
+		}
+		// If there is differences we allow for the next handler to run
+		// typically a notifier such as slack
+		if len(diff) > 0 {
+			nextRun = true
 		}
 	}
 
@@ -117,7 +131,8 @@ func DiffFunc(ctx context.Context, input Input) (Output, error) {
 	return Output{
 		K8sManifest: cleanedManifest,
 		Payload:     diff,
-		RunNext:     nextRun}, nil
+		RunNext:     nextRun,
+	}, nil
 }
 
 func newStorage() storage {

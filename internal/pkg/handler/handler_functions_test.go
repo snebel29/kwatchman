@@ -19,7 +19,7 @@ func TestLogHandlerFunc(t *testing.T) {
 		})
 	m := hook.LastEntry().Message
 
-	expected := "&common.K8sEvent{Key:\"\", HasSynced:false, Object:runtime.Object(nil), Kind:\"\"} {\n \"a\": 1\n} "
+	expected := "&common.K8sEvent{Key:\"\", HasSynced:false, Object:runtime.Object(nil), Kind:\"\"} "
 	if m != expected {
 		t.Errorf("%s should match %s", m, expected)
 	}
