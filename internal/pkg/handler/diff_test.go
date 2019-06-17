@@ -136,10 +136,6 @@ func TestDiffFuncLogEntryIfthereIsDifferences(t *testing.T) {
 	if err != nil {
 		t.Error("No error should have ocurred on Diff")
 	}
-
-	if len(hook.AllEntries()) != 1 || hook.LastEntry().Level.String() != "info" {
-		t.Errorf("There should be just one log entry, there is %d instead", len(hook.AllEntries()))
-	}
 }
 
 func TestDiffTextLines(t *testing.T) {

@@ -27,6 +27,7 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 	chainOfHandlers := handler.NewChainOfHandlers(
 		handler.DiffFunc,
 		handler.NewSlackNotifier(c.ClusterName).Send,
+		handler.LogHandlerFunc,
 	)
 
 	return &K8sWatcher{
