@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"github.com/snebel29/kooper/operator/common"
 	"reflect"
 	"testing"
@@ -23,40 +22,10 @@ func TestPrettyPrintJSON(t *testing.T) {
 	}
 }
 
-type MockHandler struct {
-	called        bool
-	passedPayload []byte
-	passedEvent   *common.K8sEvent
-	passedContext context.Context
-}
-
-func (h *MockHandler) dummyHandlerFunc(ctx context.Context, input Input) (Output, error) {
-	h.called = true
-	h.passedPayload = input.Payload
-	h.passedEvent = input.Evt
-	h.passedContext = ctx
-
-	return Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     true}, nil
-}
-
-func (h *MockHandler) dummyHandlerFuncThatReturnError(ctx context.Context, input Input) (Output, error) {
-	return Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     false}, fmt.Errorf("dummy error")
-}
-
-func NewHandler() *MockHandler {
-	return &MockHandler{called: false}
-}
-
 func TestChainOfHandlers_Run(t *testing.T) {
-	h1 := NewHandler()
-	h2 := NewHandler()
-	ch := NewChainOfHandlers(h1.dummyHandlerFunc, h2.dummyHandlerFunc, h1.dummyHandlerFuncThatReturnError)
+	h1 := NewMockHandler()
+	h2 := NewMockHandler()
+	ch := NewChainOfHandlers(h1.DummyHandlerFunc, h2.DummyHandlerFunc, h1.DummyHandlerFuncThatReturnError)
 
 	evt := &common.K8sEvent{}
 	manifest := []byte("manifest")
@@ -72,19 +41,19 @@ func TestChainOfHandlers_Run(t *testing.T) {
 		t.Error("Last handler function should have returned an error")
 	}
 
-	if h1.called != true || h2.called != true {
-		t.Errorf("handlers should have been called h1: %t h2: %t", h1.called, h2.called)
+	if h1.Called != true || h2.Called != true {
+		t.Errorf("handlers should have been called h1: %t h2: %t", h1.Called, h2.Called)
 	}
 
-	if !reflect.DeepEqual(h1.passedPayload, payload) || !reflect.DeepEqual(h2.passedPayload, payload) {
-		t.Errorf("payload should have been passed h1: %s h2: %s", string(h1.passedPayload), string(h2.passedPayload))
+	if !reflect.DeepEqual(h1.PassedPayload, payload) || !reflect.DeepEqual(h2.PassedPayload, payload) {
+		t.Errorf("payload should have been passed h1: %s h2: %s", string(h1.PassedPayload), string(h2.PassedPayload))
 	}
 
-	if !reflect.DeepEqual(h1.passedEvent, evt) || !reflect.DeepEqual(h2.passedEvent, evt) {
-		t.Errorf("event should have been passed h1: %#v h2: %#v", h1.passedEvent, h2.passedEvent)
+	if !reflect.DeepEqual(h1.PassedEvent, evt) || !reflect.DeepEqual(h2.PassedEvent, evt) {
+		t.Errorf("event should have been passed h1: %#v h2: %#v", h1.PassedEvent, h2.PassedEvent)
 	}
 
-	if !reflect.DeepEqual(h1.passedContext, context.TODO()) || !reflect.DeepEqual(h2.passedContext, context.TODO()) {
-		t.Errorf("context should have been passed h1: %#v h2: %#v", h1.passedContext, h2.passedContext)
+	if !reflect.DeepEqual(h1.PassedContext, context.TODO()) || !reflect.DeepEqual(h2.PassedContext, context.TODO()) {
+		t.Errorf("context should have been passed h1: %#v h2: %#v", h1.PassedContext, h2.PassedContext)
 	}
 }
