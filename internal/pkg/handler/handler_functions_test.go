@@ -17,10 +17,9 @@ func TestLogHandlerFunc(t *testing.T) {
 			K8sManifest: manifest,
 			Payload:     []byte{},
 		})
-	m := hook.LastEntry().Message
+	m := hook.Entries
 
-	expected := "&common.K8sEvent{Key:\"\", HasSynced:false, Object:runtime.Object(nil), Kind:\"\"} "
-	if m != expected {
-		t.Errorf("%s should match %s", m, expected)
+	if len(m) != 1 {
+		t.Errorf("There should be one entry, there is %d instead", len(m))
 	}
 }

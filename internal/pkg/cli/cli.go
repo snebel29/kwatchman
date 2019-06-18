@@ -11,7 +11,11 @@ var (
 	clusterName = kingpin.Flag(
 		"cluster-name",
 		"Name of k8s cluster where kwatchman is running, use for notification purposes only").Default(
-		"undefined").Short('n').String()
+		"undefined").Short('c').String()
+	namespace = kingpin.Flag(
+		"namespace",
+		"k8s namespace where to get resources from: default to all").Default(
+		"").Short('n').String()
 	kubeconfig = kingpin.Flag(
 		"kubeconfig",
 		"kubeconfig path for running out of k8s").Default(
@@ -21,6 +25,7 @@ var (
 // CLIArgs holds the command line arguments
 type CLIArgs struct {
 	ClusterName string
+	Namespace   string
 	Kubeconfig  string
 }
 
@@ -31,6 +36,7 @@ func NewCLI() *CLIArgs {
 	kingpin.Parse()
 	return &CLIArgs{
 		ClusterName: *clusterName,
+		Namespace:   *namespace,
 		Kubeconfig:  *kubeconfig,
 	}
 }

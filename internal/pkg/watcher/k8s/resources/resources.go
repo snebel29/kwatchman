@@ -82,6 +82,7 @@ func NewKooperHandlerFunction(
 
 func NewK8sDeploymentWatcher(
 	clientset kubernetes.Interface,
+	namespace string,
 	chainOfHandlers handler.ChainOfHandlers) watcher.ResourceWatcher {
 
 	resourceKind := "Deployment"
@@ -89,10 +90,10 @@ func NewK8sDeploymentWatcher(
 		Object: &appsv1.Deployment{},
 		ListerWatcher: &cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return clientset.AppsV1().Deployments("").List(options)
+				return clientset.AppsV1().Deployments(namespace).List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return clientset.AppsV1().Deployments("").Watch(options)
+				return clientset.AppsV1().Deployments(namespace).Watch(options)
 			},
 		},
 	}
