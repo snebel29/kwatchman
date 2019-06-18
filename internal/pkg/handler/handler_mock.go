@@ -7,16 +7,18 @@ import (
 )
 
 type MockHandler struct {
-	Called            bool
-	PassedPayload     []byte
-	PassedK8sManifest []byte
-	PassedEvent       *common.K8sEvent
-	PassedContext     context.Context
+	Called             bool
+	PassedPayload      []byte
+	PassedK8sManifest  []byte
+	PassedResourceKind string
+	PassedEvent        *common.K8sEvent
+	PassedContext      context.Context
 }
 
 func (h *MockHandler) DummyHandlerFunc(ctx context.Context, input Input) (Output, error) {
 	h.Called = true
 	h.PassedPayload = input.Payload
+	h.PassedResourceKind = input.ResourceKind
 	h.PassedK8sManifest = input.K8sManifest
 	h.PassedEvent = input.Evt
 	h.PassedContext = ctx

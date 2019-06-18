@@ -11,7 +11,7 @@ type Notifier interface {
 
 type notifier struct {
 	clusterName string
-	notify      func(kind, key, clusterName, payload string) error
+	notify      func(kind, key, clusterName, resourceKind, payload string) error
 }
 
 func NewSlackNotifier(clusterName string) *notifier {
@@ -22,7 +22,13 @@ func NewSlackNotifier(clusterName string) *notifier {
 }
 
 func (n *notifier) Send(ctx context.Context, input Input) (Output, error) {
-	err := n.notify(input.Evt.Kind, input.Evt.Key, n.clusterName, string(input.Payload))
+	err := n.notify(
+		input.Evt.Kind,
+		input.Evt.Key,
+		n.clusterName,
+		input.ResourceKind,
+		string(input.Payload),
+	)
 	if err != nil {
 		return Output{
 			K8sManifest: input.K8sManifest,

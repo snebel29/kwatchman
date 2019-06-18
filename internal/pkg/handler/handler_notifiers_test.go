@@ -12,7 +12,7 @@ type MockNotifier struct {
 	returnError bool
 }
 
-func (m *MockNotifier) notify(kind, key, clusterName, payload string) error {
+func (m *MockNotifier) notify(kind, key, clusterName, resourceKind, payload string) error {
 	m.called = true
 	if m.returnError {
 		return errors.New("fake error")
