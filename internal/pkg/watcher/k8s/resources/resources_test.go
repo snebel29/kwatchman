@@ -30,7 +30,7 @@ func k8sIndividualResourceWatcherHelper(w watcher.ResourceWatcher, t *testing.T)
 }
 
 func TestK8sDeploymentWatcher(t *testing.T) {
-	chainOfHandlers := handler.NewChainOfHandlers(handler.LogHandlerFunc)
+	chainOfHandlers := handler.NewChainOfHandlers(handler.NewLogHandler())
 	k8sIndividualResourceWatcherHelper(NewK8sDeploymentWatcher(nil, "", chainOfHandlers), t)
 }
 
@@ -81,7 +81,7 @@ func TestGetManifest(t *testing.T) {
 
 func TestNewKooperHandlerFunctionWithAdd(t *testing.T) {
 	h1 := handler.NewMockHandler()
-	chainOfHandlers := handler.NewChainOfHandlers(h1.DummyHandlerFunc)
+	chainOfHandlers := handler.NewChainOfHandlers(h1)
 	fn := NewKooperHandlerFunction(chainOfHandlers, "Deployment")
 
 	err := fn(nil, &common.K8sEvent{
@@ -107,7 +107,7 @@ func TestNewKooperHandlerFunctionWithAdd(t *testing.T) {
 
 func TestNewKooperHandlerFunctionWithDelete(t *testing.T) {
 	h1 := handler.NewMockHandler()
-	chainOfHandlers := handler.NewChainOfHandlers(h1.DummyHandlerFunc)
+	chainOfHandlers := handler.NewChainOfHandlers(h1)
 	fn := NewKooperHandlerFunction(chainOfHandlers, "Deployment")
 
 	err := fn(nil, &common.K8sEvent{

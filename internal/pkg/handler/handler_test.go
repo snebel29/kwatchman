@@ -25,7 +25,9 @@ func TestPrettyPrintJSON(t *testing.T) {
 func TestChainOfHandlers_Run(t *testing.T) {
 	h1 := NewMockHandler()
 	h2 := NewMockHandler()
-	ch := NewChainOfHandlers(h1.DummyHandlerFunc, h2.DummyHandlerFunc, h1.DummyHandlerFuncThatReturnError)
+	h3 := NewMockHandlerError()
+
+	ch := NewChainOfHandlers(h1, h2, h3)
 
 	evt := &common.K8sEvent{}
 	manifest := []byte("manifest")

@@ -61,7 +61,7 @@ func TestCleanK8sManifest(t *testing.T) {
 	}
 }
 
-func TestDiffFuncLogEntryIfthereIsDifferences(t *testing.T) {
+func TestDiffHandler(t *testing.T) {
 	hook := log_test.NewGlobal()
 
 	key := "Key1"
@@ -73,7 +73,8 @@ func TestDiffFuncLogEntryIfthereIsDifferences(t *testing.T) {
 
 	// Fake JSON struct must have some common fields with k8sObject struct
 	// In order to unmarshal the differences
-	output, err := DiffFunc(
+	h := NewDiffHandler()
+	output, err := h.Run(
 		context.TODO(),
 		Input{
 			Evt: &common.K8sEvent{
@@ -109,7 +110,8 @@ func TestDiffFuncLogEntryIfthereIsDifferences(t *testing.T) {
 	}
 
 	// In this case a difference should be raised
-	output, err = DiffFunc(
+	h2 := NewDiffHandler()
+	output, err = h2.Run(
 		context.TODO(),
 		Input{
 			Evt: &common.K8sEvent{

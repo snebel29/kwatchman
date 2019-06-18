@@ -43,6 +43,12 @@ type k8sObject struct {
 	Status     interface{}       `json:"-"` // status will be omitted by json.Marshal
 }
 
+type diffHandler struct{}
+
+func NewDiffHandler() *diffHandler {
+	return &diffHandler{}
+}
+
 func filterMapByKey(m map[string]string, toFilter []string) {
 	for _, k := range toFilter {
 		delete(m, k)
@@ -83,12 +89,12 @@ func cleanK8sManifest(manifest []byte) ([]byte, error) {
 	return _json, nil
 }
 
-// DiffFunc spits out the differentce between previous versions of K8sManifest
+// diff Run spits out the differentce between previous versions of K8sManifest
 // this function is normally the base function handler for resource watchers
 // because filters noise by cleaning metadata consolidating logical changes
 // from the user perspective, output returns the cleaned manifest and the diff is
 // returned in the payload
-func DiffFunc(ctx context.Context, input Input) (Output, error) {
+func (h *diffHandler) Run(ctx context.Context, input Input) (Output, error) {
 	//TODO: Should cleaning manifest be extracted from DiffFunc into its own Handler?
 	ctx = nil
 	s := newStorage()
