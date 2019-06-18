@@ -1,6 +1,8 @@
 package slack
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -38,5 +40,17 @@ func TestTruncate(t *testing.T) {
 }
 
 func TestMsgToSlack(t *testing.T) {
-	//TODO: We need to mock nslopes/slack
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{}"))
+	}))
+	defer ts.Close()
+
+	s := ts.URL
+	slackWebhookUrl = &s
+	err := MsgToSlack("Update", "default/mercator", "myClusterName", "Deploment", "empty")
+	if err != nil {
+		t.Error(err)
+	}
+
 }
