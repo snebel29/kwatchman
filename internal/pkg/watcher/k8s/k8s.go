@@ -34,7 +34,7 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 		opts: c,
 		// TODO: Make resources configurable by user
 		k8sResources: []watcher.ResourceWatcher{
-			resources.NewK8sDeploymentWatcher(clientset, chainOfHandlers),
+			resources.NewK8sDeploymentWatcher(clientset, c.Namespace, chainOfHandlers),
 		},
 	}, nil
 }

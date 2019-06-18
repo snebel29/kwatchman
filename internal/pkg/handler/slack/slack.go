@@ -22,7 +22,7 @@ var (
 	}
 	slackWebhookUrl = kingpin.Flag(
 		"slack-webhook",
-		"The slack webhook url").Envar("KW_SLACK_WEBHOOK").Short('w').Required().String()
+		"The slack webhook url (Required)").Envar("KW_SLACK_WEBHOOK").Short('w').Required().String()
 )
 
 func minInt(a, b int) int {
