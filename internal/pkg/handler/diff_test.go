@@ -176,7 +176,7 @@ func TestCreateTempFile(t *testing.T) {
 	}
 }
 
-func TestCleanAnnotations(t *testing.T) {
+func TestCleanAnnotationsWorksWithInitializedAnnotations(t *testing.T) {
 	obj := &k8sObject{}
 	m1 := make(map[string]string)
 
@@ -191,6 +191,18 @@ func TestCleanAnnotations(t *testing.T) {
 
 	if !reflect.DeepEqual(m1, m2) {
 		t.Errorf("k8sObject Annotations should be clean!, got %#v instead", m1)
+	}
+}
+
+func TestCleanAnnotationsWorksWithNONInitializedAnnotations(t *testing.T) {
+	obj := &k8sObject{}
+
+	cleanAnnotations(obj)
+	m2 := map[string]string{}
+
+	if !reflect.DeepEqual(obj.Metadata.Annotations, m2) {
+		t.Errorf(
+			"k8sObject Annotations should have been automatically initialized after cleaning it!, got %#v instead", obj.Metadata.Annotations)
 	}
 }
 

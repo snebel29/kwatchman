@@ -50,6 +50,9 @@ func filterMapByKey(m map[string]string, toFilter []string) {
 }
 
 func cleanAnnotations(obj *k8sObject) {
+	if obj.Metadata.Annotations == nil {
+		obj.Metadata.Annotations = make(map[string]string)
+	}
 	filterMapByKey(
 		obj.Metadata.Annotations,
 		AnnotationsToClean,
