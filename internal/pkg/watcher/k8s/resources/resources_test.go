@@ -82,7 +82,7 @@ func TestGetManifest(t *testing.T) {
 func TestNewKooperHandlerFunctionWithAdd(t *testing.T) {
 	h1 := handler.NewMockHandler()
 	chainOfHandlers := handler.NewChainOfHandlers(h1.DummyHandlerFunc)
-	fn := NewKooperHandlerFunction(chainOfHandlers)
+	fn := NewKooperHandlerFunction(chainOfHandlers, "Deployment")
 
 	err := fn(nil, &common.K8sEvent{
 		Kind:      "Add",
@@ -108,7 +108,7 @@ func TestNewKooperHandlerFunctionWithAdd(t *testing.T) {
 func TestNewKooperHandlerFunctionWithDelete(t *testing.T) {
 	h1 := handler.NewMockHandler()
 	chainOfHandlers := handler.NewChainOfHandlers(h1.DummyHandlerFunc)
-	fn := NewKooperHandlerFunction(chainOfHandlers)
+	fn := NewKooperHandlerFunction(chainOfHandlers, "Deployment")
 
 	err := fn(nil, &common.K8sEvent{
 		Kind:      "Delete",

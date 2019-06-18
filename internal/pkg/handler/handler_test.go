@@ -30,11 +30,13 @@ func TestChainOfHandlers_Run(t *testing.T) {
 	evt := &common.K8sEvent{}
 	manifest := []byte("manifest")
 	payload := []byte("payload")
+	resourceKind := "Deployment"
 
 	err := ch.Run(context.TODO(), Input{
-		Evt:         evt,
-		K8sManifest: manifest,
-		Payload:     payload,
+		Evt:          evt,
+		ResourceKind: resourceKind,
+		K8sManifest:  manifest,
+		Payload:      payload,
 	})
 
 	if err == nil {
@@ -43,6 +45,11 @@ func TestChainOfHandlers_Run(t *testing.T) {
 
 	if h1.Called != true || h2.Called != true {
 		t.Errorf("handlers should have been called h1: %t h2: %t", h1.Called, h2.Called)
+	}
+
+	if h1.PassedResourceKind != resourceKind ||
+		h2.PassedResourceKind != resourceKind {
+		t.Errorf("%s should match %s", h1.PassedResourceKind, resourceKind)
 	}
 
 	if !reflect.DeepEqual(h1.PassedPayload, payload) || !reflect.DeepEqual(h2.PassedPayload, payload) {

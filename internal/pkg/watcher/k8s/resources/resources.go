@@ -43,7 +43,8 @@ func getManifest(obj interface{}) ([]byte, error) {
 //the type assertion to fail, downstream Handler functions should apply different
 // logic based on its evt.Kind value
 func NewKooperHandlerFunction(
-	chainOfHandlers handler.ChainOfHandlers) func(context.Context, *kooper.K8sEvent) error {
+	chainOfHandlers handler.ChainOfHandlers,
+	resourceKind string) func(context.Context, *kooper.K8sEvent) error {
 
 	fn := func(_ context.Context, evt *kooper.K8sEvent) error {
 		var err error
@@ -64,9 +65,10 @@ func NewKooperHandlerFunction(
 		}
 
 		err = chainOfHandlers.Run(nil, handler.Input{
-			Evt:         evt,
-			K8sManifest: manifest,
-			Payload:     []byte{},
+			Evt:          evt,
+			ResourceKind: resourceKind,
+			K8sManifest:  manifest,
+			Payload:      []byte{},
 		})
 
 		if err != nil {
@@ -82,7 +84,7 @@ func NewK8sDeploymentWatcher(
 	clientset kubernetes.Interface,
 	chainOfHandlers handler.ChainOfHandlers) watcher.ResourceWatcher {
 
-	kind := "Deployment"
+	resourceKind := "Deployment"
 	retr := &retrieve.Resource{
 		Object: &appsv1.Deployment{},
 		ListerWatcher: &cache.ListWatch{
@@ -95,10 +97,10 @@ func NewK8sDeploymentWatcher(
 		},
 	}
 
-	fn := NewKooperHandlerFunction(chainOfHandlers)
+	fn := NewKooperHandlerFunction(chainOfHandlers, resourceKind)
 	hand := &kooper_handler.HandlerFunc{
 		AddFunc:    fn,
 		DeleteFunc: fn,
 	}
-	return newK8sResourceWatcher(kind, hand, retr)
+	return newK8sResourceWatcher(resourceKind, hand, retr)
 }

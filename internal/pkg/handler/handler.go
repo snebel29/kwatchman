@@ -12,9 +12,10 @@ type ResourcesHandlerFunc func(context.Context, Input) (Output, error)
 
 // Input holds the input data for any handler
 type Input struct {
-	Evt         *common.K8sEvent
-	K8sManifest []byte
-	Payload     []byte //This is a free field that can hold, anything such as text, images, etc
+	Evt          *common.K8sEvent
+	ResourceKind string
+	K8sManifest  []byte
+	Payload      []byte //This is a free field that can hold, anything such as text, images, etc
 }
 
 // Ouput holds the output data from any handler execution
@@ -40,7 +41,12 @@ func (c *chainOfHandlers) Run(ctx context.Context, input Input) error {
 	payload := input.Payload
 
 	for i, f := range c.handlers {
-		output, err := f(ctx, Input{Evt: input.Evt, K8sManifest: toSend, Payload: payload})
+		output, err := f(ctx, Input{
+			Evt:          input.Evt,
+			ResourceKind: input.ResourceKind,
+			K8sManifest:  toSend,
+			Payload:      payload,
+		})
 		if err != nil {
 			return errors.Wrapf(err, "The %d function failed within chainOfHandlers run()", i)
 		}
