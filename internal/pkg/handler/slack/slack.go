@@ -1,10 +1,12 @@
 package slack
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"strconv"
 	"strings"
@@ -20,7 +22,11 @@ var (
 		"Delete": "#FF0000",
 		"Info":   "#0000FF",
 	}
-	slackWebhookUrl = kingpin.Flag(
+	clusterName = kingpin.Flag(
+		"cluster-name",
+		"Name of k8s cluster where kwatchman is running, providing context into the notification").Default(
+		"Undefined cluster").Envar("KW_CLUSTERNAME").Short('c').String()
+	webhookURL = kingpin.Flag(
 		"slack-webhook",
 		"The slack webhook url (Required)").Envar("KW_SLACK_WEBHOOK").Short('w').Required().String()
 )
@@ -38,35 +44,66 @@ func truncateString(text string, limit int) string {
 	return string(runes[:limit])
 }
 
-func MsgToSlack(kind, objKey, clusterName, resourceKind, payload string) error {
-	title := fmt.Sprintf("%s %s\n%s", strings.ToUpper(kind), resourceKind, objKey)
+type cliArgs struct {
+	clusterName string
+	webhookURL  string
+}
+
+func newCLI() *cliArgs {
+	return &cliArgs{
+		clusterName: *clusterName,
+		webhookURL:  *webhookURL,
+	}
+}
+
+type slackHandler struct {
+	opts *cliArgs
+}
+
+func NewSlackHandler() *slackHandler {
+	return &slackHandler{
+		opts: newCLI(),
+	}
+}
+
+func (h *slackHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
+	title := fmt.Sprintf("%s %s\n%s", strings.ToUpper(input.Evt.Kind), input.ResourceKind, input.Evt.Key)
 
 	// From Aug-2018 Slack requires text field to be under 4000 characters
 	// https://api.slack.com/changelog/2018-04-truncating-really-long-messages
-	if kind == "Add" || kind == "Delete" {
-		payload = ""
+	var text string
+	if len(input.Payload) == 0 {
+		text = ""
 	} else {
-		payload = fmt.Sprintf("```%s```", truncateString(payload, 3994))
+		text = fmt.Sprintf("```%s```", truncateString(string(input.Payload), 3994))
 	}
 
 	// https://api.slack.com/docs/message-attachments
 	attachment := slack.Attachment{
 		Title:      title,
-		Color:      EventColour[kind],
+		Color:      EventColour[input.Evt.Kind],
 		Fallback:   title,
 		AuthorName: "snebel29/kwatchman",
 		AuthorLink: "https://github.com/snebel29/kwatchman",
-		Text:       payload,
-		Footer:     clusterName,
+		Text:       text,
+		Footer:     h.opts.clusterName,
 		Ts:         json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
 	}
-	msg := slack.WebhookMessage{
+	msg := &slack.WebhookMessage{
 		Attachments: []slack.Attachment{attachment},
 	}
 
-	err := slack.PostWebhook(*slackWebhookUrl, &msg)
-	if err != nil {
-		return errors.Wrap(err, "PostWebhook: ")
+	output := handler.Output{
+		K8sManifest: input.K8sManifest,
+		Payload:     input.Payload,
+		RunNext:     true,
 	}
-	return nil
+
+	err := slack.PostWebhook(h.opts.webhookURL, msg)
+	if err != nil {
+		err = errors.Wrap(err, "PostWebhook: ")
+		output.RunNext = false
+		return output, err
+	}
+	return output, nil
 }

@@ -8,7 +8,9 @@ import (
 	"github.com/snebel29/kooper/operator/common"
 )
 
-type ResourcesHandlerFunc func(context.Context, Input) (Output, error)
+type Handler interface {
+	Run(context.Context, Input) (Output, error)
+}
 
 // Input holds the input data for any handler
 type Input struct {
@@ -26,12 +28,12 @@ type Output struct {
 }
 
 type ChainOfHandlers interface {
-	Run(ctx context.Context, input Input) error
+	Run(context.Context, Input) error
 }
 
 // chainOfHandlers holds a list of ResourcesHandlerFunc that can be exexcute sequencially
 type chainOfHandlers struct {
-	handlers []ResourcesHandlerFunc
+	handlers []Handler
 }
 
 // Run will execute each handler one after the other, the handler itself is responsible to decide
@@ -40,8 +42,8 @@ func (c *chainOfHandlers) Run(ctx context.Context, input Input) error {
 	toSend := input.K8sManifest
 	payload := input.Payload
 
-	for i, f := range c.handlers {
-		output, err := f(ctx, Input{
+	for i, h := range c.handlers {
+		output, err := h.Run(ctx, Input{
 			Evt:          input.Evt,
 			ResourceKind: input.ResourceKind,
 			K8sManifest:  toSend,
@@ -59,7 +61,7 @@ func (c *chainOfHandlers) Run(ctx context.Context, input Input) error {
 	return nil
 }
 
-func NewChainOfHandlers(handlers ...ResourcesHandlerFunc) *chainOfHandlers {
+func NewChainOfHandlers(handlers ...Handler) ChainOfHandlers {
 	return &chainOfHandlers{
 		handlers: handlers,
 	}
