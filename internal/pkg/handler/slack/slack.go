@@ -60,7 +60,7 @@ type slackHandler struct {
 	opts *cliArgs
 }
 
-func NewSlackHandler() *slackHandler {
+func NewSlackHandler() handler.Handler {
 	return &slackHandler{
 		opts: newCLI(),
 	}
