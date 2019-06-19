@@ -46,6 +46,11 @@ Flags:
       --version       Show application version.
 ```
 
+## Similar projects
+
+- [kubewatch](https://github.com/bitnami-labs/kubewatch)
+- [chowkidar](https://github.com/stakater/Chowkidar)
+
 ## Development
 ### Build
 ```
