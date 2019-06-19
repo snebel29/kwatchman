@@ -9,7 +9,7 @@ import (
 
 type logHandler struct{}
 
-func NewLogHandler() *logHandler {
+func NewLogHandler() Handler {
 	return &logHandler{}
 }
 

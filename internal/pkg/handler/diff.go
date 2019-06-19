@@ -45,7 +45,7 @@ type k8sObject struct {
 
 type diffHandler struct{}
 
-func NewDiffHandler() *diffHandler {
+func NewDiffHandler() Handler {
 	return &diffHandler{}
 }
 
