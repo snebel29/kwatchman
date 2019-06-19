@@ -1,8 +1,9 @@
-package handler
+package log
 
 import (
 	log_test "github.com/sirupsen/logrus/hooks/test"
 	"github.com/snebel29/kooper/operator/common"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"reflect"
 	"testing"
 )
@@ -20,7 +21,7 @@ func TestLogHandlerFunc(t *testing.T) {
 
 	output, err := h.Run(
 		nil,
-		Input{
+		handler.Input{
 			Evt:          evt,
 			ResourceKind: resourceKind,
 			K8sManifest:  manifest,
