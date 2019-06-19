@@ -13,7 +13,7 @@ func TestPrettyPrintJSON(t *testing.T) {
 	arg := "{\"a\": 1}"
 	expected := "{\n \"a\": 1\n}"
 
-	returned, err := prettyPrintJSON([]byte(arg))
+	returned, err := PrettyPrintJSON([]byte(arg))
 	if err != nil {
 		t.Error(err)
 	}

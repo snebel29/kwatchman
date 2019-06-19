@@ -1,4 +1,4 @@
-package handler
+package diff
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"fmt"
 	log_test "github.com/sirupsen/logrus/hooks/test"
 	"github.com/snebel29/kooper/operator/common"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"io/ioutil"
 	"reflect"
 	"runtime"
@@ -76,7 +77,7 @@ func TestDiffHandler(t *testing.T) {
 	h := NewDiffHandler()
 	output, err := h.Run(
 		context.TODO(),
-		Input{
+		handler.Input{
 			Evt: &common.K8sEvent{
 				Key:       key,
 				HasSynced: true,
@@ -113,7 +114,7 @@ func TestDiffHandler(t *testing.T) {
 	h2 := NewDiffHandler()
 	output, err = h2.Run(
 		context.TODO(),
-		Input{
+		handler.Input{
 			Evt: &common.K8sEvent{
 				Key:       key,
 				HasSynced: true,

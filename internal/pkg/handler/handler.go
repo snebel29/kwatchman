@@ -67,7 +67,7 @@ func NewChainOfHandlers(handlers ...Handler) ChainOfHandlers {
 	}
 }
 
-func prettyPrintJSON(_json []byte) ([]byte, error) {
+func PrettyPrintJSON(_json []byte) ([]byte, error) {
 	var indented bytes.Buffer
 	if err := json.Indent(&indented, _json, "", " "); err != nil {
 		return nil, err

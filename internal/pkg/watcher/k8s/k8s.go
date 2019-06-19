@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
+	"github.com/snebel29/kwatchman/internal/pkg/handler/diff"
+	"github.com/snebel29/kwatchman/internal/pkg/handler/log"
 	"github.com/snebel29/kwatchman/internal/pkg/handler/slack"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher/k8s/resources"
@@ -26,9 +28,9 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 	}
 
 	chainOfHandlers := handler.NewChainOfHandlers(
-		handler.NewDiffHandler(),
+		diff.NewDiffHandler(),
 		slack.NewSlackHandler(),
-		handler.NewLogHandler(),
+		log.NewLogHandler(),
 	)
 
 	return &K8sWatcher{

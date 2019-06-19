@@ -1,10 +1,11 @@
-package handler
+package diff
 
 import (
 	"context"
 	"encoding/json"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -45,7 +46,7 @@ type k8sObject struct {
 
 type diffHandler struct{}
 
-func NewDiffHandler() Handler {
+func NewDiffHandler() handler.Handler {
 	return &diffHandler{}
 }
 
@@ -81,7 +82,7 @@ func cleanK8sManifest(manifest []byte) ([]byte, error) {
 		return nil, errors.Wrap(err, "cleanK8sManifest Marshal")
 	}
 
-	_json, err := prettyPrintJSON(_cleanK8sManifest)
+	_json, err := handler.PrettyPrintJSON(_cleanK8sManifest)
 	if err != nil {
 		return nil, errors.Wrap(err, "cleanK8sManifest prettyPrintJSON")
 	}
@@ -94,7 +95,7 @@ func cleanK8sManifest(manifest []byte) ([]byte, error) {
 // because filters noise by cleaning metadata consolidating logical changes
 // from the user perspective, output returns the cleaned manifest and the diff is
 // returned in the payload
-func (h *diffHandler) Run(ctx context.Context, input Input) (Output, error) {
+func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
 	//TODO: Should cleaning manifest be extracted from DiffFunc into its own Handler?
 	ctx = nil
 	s := newStorage()
@@ -102,7 +103,7 @@ func (h *diffHandler) Run(ctx context.Context, input Input) (Output, error) {
 	if input.Evt.Kind == "Delete" {
 		delete(s, input.Evt.Key)
 
-		return Output{
+		return handler.Output{
 			K8sManifest: input.K8sManifest,
 			Payload:     input.Payload,
 			RunNext:     false, // Delete events won't be handled from now on
@@ -112,7 +113,7 @@ func (h *diffHandler) Run(ctx context.Context, input Input) (Output, error) {
 	// Only diff if event is Update
 	cleanedManifest, err := cleanK8sManifest(input.K8sManifest)
 	if err != nil {
-		return Output{
+		return handler.Output{
 			K8sManifest: input.K8sManifest,
 			Payload:     input.Payload,
 			RunNext:     false}, err
@@ -124,7 +125,7 @@ func (h *diffHandler) Run(ctx context.Context, input Input) (Output, error) {
 	if storedManifest, ok := s[input.Evt.Key]; ok && input.Evt.HasSynced {
 		diff, err = diffTextLines(storedManifest, cleanedManifest)
 		if err != nil {
-			return Output{
+			return handler.Output{
 				K8sManifest: input.K8sManifest,
 				Payload:     input.Payload,
 				RunNext:     false}, errors.Wrap(err, "diffTextLines")
@@ -137,7 +138,7 @@ func (h *diffHandler) Run(ctx context.Context, input Input) (Output, error) {
 	}
 
 	s[input.Evt.Key] = cleanedManifest
-	return Output{
+	return handler.Output{
 		K8sManifest: cleanedManifest,
 		Payload:     diff,
 		RunNext:     nextRun,
