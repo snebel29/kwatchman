@@ -52,6 +52,19 @@ Flags:
 - [chowkidar](https://github.com/stakater/Chowkidar)
 
 ## Development
+
+### Dependencies
+
+- [make](https://www.gnu.org/software/make/)
+- [docker](https://www.docker.com/)
+- [go](https://golang.org/dl/) >= 1.12 official builds currently uses 1.12
+- [dep](https://github.com/golang/dep) will soon be replaced by go modules
+
+### Testing
+```
+$ make test
+```
+
 ### Build
 ```
 $ VERSION=1.0.0 make build
