@@ -9,14 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"sync"
 )
-
-var (
-	singleton storage
-)
-
-type storage map[string][]byte
 
 type k8sObjectMetadata struct {
 	Annotations map[string]string `json:"annotations"`
@@ -42,6 +35,7 @@ type k8sObject struct {
 
 type diffHandler struct {
 	annotationsToClean []string
+	storage            *storage
 }
 
 func NewDiffHandler() handler.Handler {
@@ -50,6 +44,7 @@ func NewDiffHandler() handler.Handler {
 			"deployment.kubernetes.io/revision",
 			"kubectl.kubernetes.io/last-applied-configuration",
 		},
+		storage: newStorage(),
 	}
 }
 
@@ -93,18 +88,17 @@ func cleanK8sManifest(manifest []byte, annotationsToClean []string) ([]byte, err
 	return _json, nil
 }
 
-// diff Run spits out the differentce between previous versions of K8sManifest
+// Run spits out the differentce between previous versions of K8sManifest
 // this function is normally the base function handler for resource watchers
 // because filters noise by cleaning metadata consolidating logical changes
 // from the user perspective, output returns the cleaned manifest and the diff is
-// returned in the payload
+// returned in the payload, next handler is run only if a difference is found
 func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
 	//TODO: Should cleaning manifest be extracted from DiffFunc into its own Handler?
 	ctx = nil
-	s := newStorage()
 
 	if input.Evt.Kind == "Delete" {
-		delete(s, input.Evt.Key)
+		h.storage.Delete(input.Evt.Key)
 
 		return handler.Output{
 			K8sManifest: input.K8sManifest,
@@ -125,7 +119,7 @@ func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Out
 	var diff []byte
 	nextRun := false
 
-	if storedManifest, ok := s[input.Evt.Key]; ok && input.Evt.HasSynced {
+	if storedManifest, ok := h.storage.Get(input.Evt.Key); ok && input.Evt.HasSynced {
 		diff, err = diffTextLines(storedManifest, cleanedManifest)
 		if err != nil {
 			return handler.Output{
@@ -140,22 +134,12 @@ func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Out
 		}
 	}
 
-	s[input.Evt.Key] = cleanedManifest
+	h.storage.Add(input.Evt.Key, cleanedManifest)
 	return handler.Output{
 		K8sManifest: cleanedManifest,
 		Payload:     diff,
 		RunNext:     nextRun,
 	}, nil
-}
-
-func newStorage() storage {
-	lock := &sync.Mutex{}
-	lock.Lock()
-	defer lock.Unlock()
-	if singleton == nil {
-		singleton = make(storage)
-	}
-	return singleton
 }
 
 func createTempFile(content []byte) (string, error) {
