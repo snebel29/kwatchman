@@ -45,7 +45,11 @@ func TestCleanK8sManifest(t *testing.T) {
 		  "status": {}
 		}
 	`
-	cleaned, _ := cleanK8sManifest([]byte(manifest))
+	annotationsToClean := []string{
+		"deployment.kubernetes.io/revision",
+		"kubectl.kubernetes.io/last-applied-configuration",
+	}
+	cleaned, _ := cleanK8sManifest([]byte(manifest), annotationsToClean)
 	obj := &k8sObject{}
 	json.Unmarshal(cleaned, obj)
 	if obj.Metadata.Generation != 0 {
@@ -218,13 +222,17 @@ func TestCreateTempFile(t *testing.T) {
 func TestCleanAnnotationsWorksWithInitializedAnnotations(t *testing.T) {
 	obj := &k8sObject{}
 	m1 := make(map[string]string)
+	annotationsToClean := []string{
+		"deployment.kubernetes.io/revision",
+		"kubectl.kubernetes.io/last-applied-configuration",
+	}
 
-	for _, annotation := range AnnotationsToClean {
+	for _, annotation := range annotationsToClean {
 		m1[annotation] = "whatever"
 	}
 
 	obj.Metadata.Annotations = m1
-	cleanAnnotations(obj)
+	cleanAnnotations(obj, annotationsToClean)
 
 	m2 := map[string]string{}
 
@@ -235,8 +243,12 @@ func TestCleanAnnotationsWorksWithInitializedAnnotations(t *testing.T) {
 
 func TestCleanAnnotationsWorksWithNONInitializedAnnotations(t *testing.T) {
 	obj := &k8sObject{}
+	annotationsToClean := []string{
+		"deployment.kubernetes.io/revision",
+		"kubectl.kubernetes.io/last-applied-configuration",
+	}
 
-	cleanAnnotations(obj)
+	cleanAnnotations(obj, annotationsToClean)
 	m2 := map[string]string{}
 
 	if !reflect.DeepEqual(obj.Metadata.Annotations, m2) {
