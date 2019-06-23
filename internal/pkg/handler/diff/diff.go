@@ -3,6 +3,7 @@ package diff
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
@@ -96,9 +97,10 @@ func cleanK8sManifest(manifest []byte, annotationsToClean []string) ([]byte, err
 func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
 	//TODO: Should cleaning manifest be extracted from DiffFunc into its own Handler?
 	ctx = nil
+	objId := fmt.Sprintf("%s/%s", input.Evt.Key, input.ResourceKind)
 
 	if input.Evt.Kind == "Delete" {
-		h.storage.Delete(input.Evt.Key)
+		h.storage.Delete(objId)
 
 		return handler.Output{
 			K8sManifest: input.K8sManifest,
@@ -119,7 +121,7 @@ func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Out
 	var diff []byte
 	nextRun := false
 
-	if storedManifest, ok := h.storage.Get(input.Evt.Key); ok && input.Evt.HasSynced {
+	if storedManifest, ok := h.storage.Get(objId); ok && input.Evt.HasSynced {
 		diff, err = diffTextLines(storedManifest, cleanedManifest)
 		if err != nil {
 			return handler.Output{
@@ -134,7 +136,7 @@ func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Out
 		}
 	}
 
-	h.storage.Add(input.Evt.Key, cleanedManifest)
+	h.storage.Add(objId, cleanedManifest)
 	return handler.Output{
 		K8sManifest: cleanedManifest,
 		Payload:     diff,
