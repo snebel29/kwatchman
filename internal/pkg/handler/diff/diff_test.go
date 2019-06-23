@@ -139,6 +139,42 @@ func TestDiffHandler(t *testing.T) {
 	if err != nil {
 		t.Error("No error should have ocurred on Diff")
 	}
+
+	if _, ok := s[key]; !ok {
+		t.Errorf("Key %s should exists", key)
+	}
+
+	// Manifest should be deleted from storage and next handlers not to be trigger
+	output, err = h2.Run(
+		context.TODO(),
+		handler.Input{
+			Evt: &common.K8sEvent{
+				Key:       key,
+				HasSynced: true,
+				Kind:      "Delete",
+				Object:    nil,
+			},
+			K8sManifest: []byte("{\"kind\": \"fakeKindDifferentThanPrevious\"}\n"),
+			Payload:     []byte{},
+		},
+	)
+
+	if !reflect.DeepEqual(output.Payload, []byte{}) {
+		t.Error("Payload should match")
+	}
+
+	// Because differences trigger next handler
+	if output.RunNext != false {
+		t.Error("nextRun should be false")
+	}
+
+	if err != nil {
+		t.Error("No error should have ocurred on Diff")
+	}
+
+	if _, ok := s[key]; ok {
+		t.Errorf("Key %s should NOT exists", key)
+	}
 }
 
 func TestDiffTextLines(t *testing.T) {
