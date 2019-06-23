@@ -4,32 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	log_test "github.com/sirupsen/logrus/hooks/test"
 	"github.com/snebel29/kooper/operator/common"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"io/ioutil"
 	"reflect"
-	"runtime"
 	"testing"
 )
-
-var thisFilename string
-
-func init() {
-	_, t, _, _ := runtime.Caller(0)
-	thisFilename = t
-}
-
-func TestDiffHandlerUseSingletonStorage(t *testing.T) {
-	s1 := newStorage()
-	addr1 := fmt.Sprintf("%p", s1)
-	s2 := newStorage()
-	addr2 := fmt.Sprintf("%p", s2)
-	if addr1 != addr2 {
-		t.Errorf("addr should be the same however %s != %s", addr1, addr2)
-	}
-}
 
 func TestCleanK8sManifest(t *testing.T) {
 	manifest := `
@@ -69,17 +50,14 @@ func TestCleanK8sManifest(t *testing.T) {
 func TestDiffHandler(t *testing.T) {
 	hook := log_test.NewGlobal()
 
-	key := "Key1"
-	s := newStorage()
-
-	if _, ok := s[key]; ok {
-		t.Errorf("Key %s should NOT exists", key)
-	}
-
 	// Fake JSON struct must have some common fields with k8sObject struct
 	// In order to unmarshal the differences
-	h := NewDiffHandler()
-	output, err := h.Run(
+
+	// A new key is added, no difference, no error, and nextRun == true should be expected
+	h1 := NewDiffHandler()
+	key := "key1"
+
+	output, err := h1.Run(
 		context.TODO(),
 		handler.Input{
 			Evt: &common.K8sEvent{
@@ -94,29 +72,25 @@ func TestDiffHandler(t *testing.T) {
 	)
 
 	diff := output.Payload
-	if reflect.DeepEqual(diff, []byte{}) {
-		t.Error("diff should be empty")
+	if len(diff) != 0 {
+		t.Error("There should be no diff because is a new event")
 	}
 
 	if output.RunNext != false {
-		t.Error("nextRun should be false")
+		t.Error("nextRun should be false because there is no difference")
 	}
 
 	if err != nil {
 		t.Error("No error should have ocurred on Diff")
 	}
 
-	if _, ok := s[key]; !ok {
-		t.Errorf("Key %s should exists", key)
-	}
-
 	if hook.LastEntry() != nil {
 		t.Errorf("Logging lastEntry should be nil")
 	}
 
-	// In this case a difference should be raised
-	h2 := NewDiffHandler()
-	output, err = h2.Run(
+	// The same key with diffrent kind is Updated on the same handler
+	// now a difference should be returned
+	output, err = h1.Run(
 		context.TODO(),
 		handler.Input{
 			Evt: &common.K8sEvent{
@@ -135,21 +109,16 @@ func TestDiffHandler(t *testing.T) {
 		t.Error("there should be some difference")
 	}
 
-	// Because differences trigger next handler
 	if output.RunNext != true {
-		t.Error("nextRun should be true")
+		t.Error("nextRun should be true because difference was found")
 	}
 
 	if err != nil {
 		t.Error("No error should have ocurred on Diff")
 	}
 
-	if _, ok := s[key]; !ok {
-		t.Errorf("Key %s should exists", key)
-	}
-
 	// Manifest should be deleted from storage and next handlers not to be trigger
-	output, err = h2.Run(
+	output, err = h1.Run(
 		context.TODO(),
 		handler.Input{
 			Evt: &common.K8sEvent{
@@ -158,26 +127,22 @@ func TestDiffHandler(t *testing.T) {
 				Kind:      "Delete",
 				Object:    nil,
 			},
-			K8sManifest: []byte("{\"kind\": \"fakeKindDifferentThanPrevious\"}\n"),
+			K8sManifest: []byte{},
 			Payload:     []byte{},
 		},
 	)
 
-	if !reflect.DeepEqual(output.Payload, []byte{}) {
-		t.Error("Payload should match")
+	diff = output.Payload
+	if len(diff) != 0 {
+		t.Error("There should be no difference")
 	}
 
-	// Because differences trigger next handler
 	if output.RunNext != false {
-		t.Error("nextRun should be false")
+		t.Error("nextRun should be false because there is no difference")
 	}
 
 	if err != nil {
 		t.Error("No error should have ocurred on Diff")
-	}
-
-	if _, ok := s[key]; ok {
-		t.Errorf("Key %s should NOT exists", key)
 	}
 }
 
