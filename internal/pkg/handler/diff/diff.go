@@ -13,11 +13,7 @@ import (
 )
 
 var (
-	singleton          storage
-	AnnotationsToClean = []string{
-		"deployment.kubernetes.io/revision",
-		"kubectl.kubernetes.io/last-applied-configuration",
-	}
+	singleton storage
 )
 
 type storage map[string][]byte
@@ -44,10 +40,17 @@ type k8sObject struct {
 	Status     interface{}       `json:"-"` // status will be omitted by json.Marshal
 }
 
-type diffHandler struct{}
+type diffHandler struct {
+	annotationsToClean []string
+}
 
 func NewDiffHandler() handler.Handler {
-	return &diffHandler{}
+	return &diffHandler{
+		annotationsToClean: []string{
+			"deployment.kubernetes.io/revision",
+			"kubectl.kubernetes.io/last-applied-configuration",
+		},
+	}
 }
 
 func filterMapByKey(m map[string]string, toFilter []string) {
@@ -56,26 +59,26 @@ func filterMapByKey(m map[string]string, toFilter []string) {
 	}
 }
 
-func cleanAnnotations(obj *k8sObject) {
+func cleanAnnotations(obj *k8sObject, annotationsToClean []string) {
 	if obj.Metadata.Annotations == nil {
 		obj.Metadata.Annotations = make(map[string]string)
 	}
 	filterMapByKey(
 		obj.Metadata.Annotations,
-		AnnotationsToClean,
+		annotationsToClean,
 	)
 }
 
 // cleanK8sManifest cleans metadata information and indent the manifest in preparation for text
 // comparisons
-func cleanK8sManifest(manifest []byte) ([]byte, error) {
+func cleanK8sManifest(manifest []byte, annotationsToClean []string) ([]byte, error) {
 	obj := &k8sObject{}
 
 	if err := json.Unmarshal(manifest, obj); err != nil {
 		return nil, errors.Wrap(err, "cleanK8sManifest Unmarshal")
 	}
 
-	cleanAnnotations(obj)
+	cleanAnnotations(obj, annotationsToClean)
 
 	_cleanK8sManifest, err := json.Marshal(obj)
 	if err != nil {
@@ -111,7 +114,7 @@ func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Out
 	}
 
 	// Only diff if event is Update
-	cleanedManifest, err := cleanK8sManifest(input.K8sManifest)
+	cleanedManifest, err := cleanK8sManifest(input.K8sManifest, h.annotationsToClean)
 	if err != nil {
 		return handler.Output{
 			K8sManifest: input.K8sManifest,
