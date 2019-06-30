@@ -16,12 +16,17 @@ var (
 		"kubeconfig",
 		"kubeconfig path for running out of k8s").Default(
 		fmt.Sprintf("%s/.kube/config", os.Getenv("HOME"))).Envar("KW_KUBECONFIG").Short('k').String()
+	configFile = kingpin.Flag(
+		"config",
+		"The kwatchman config file").Default(
+		fmt.Sprintf("%s/config.toml", os.Getenv("PWD"))).Envar("KW_CONFIG_FILE").Short('c').String()
 )
 
 // CLIArgs holds the command line arguments
 type CLIArgs struct {
 	Namespace  string
 	Kubeconfig string
+	ConfigFile string
 }
 
 // NewCLI returns a CLI
@@ -32,5 +37,6 @@ func NewCLI() *CLIArgs {
 	return &CLIArgs{
 		Namespace:  *namespace,
 		Kubeconfig: *kubeconfig,
+		ConfigFile: *configFile,
 	}
 }

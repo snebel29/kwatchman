@@ -25,10 +25,12 @@ func TestCLIWrongArgsExitCode(t *testing.T) {
 func TestCliArgs(t *testing.T) {
 	namespace := "myNamespace"
 	kubeconfig := "myKubeconfig"
+	config := "myConfig"
 	os.Args = []string{
 		"kwatchman",
 		fmt.Sprintf("--namespace=%s", namespace),
 		fmt.Sprintf("--kubeconfig=%s", kubeconfig),
+		fmt.Sprintf("--config=%s", config),
 	}
 
 	cli := NewCLI()
@@ -37,5 +39,8 @@ func TestCliArgs(t *testing.T) {
 	}
 	if cli.Kubeconfig != kubeconfig {
 		t.Errorf("%s != %s", cli.Kubeconfig, kubeconfig)
+	}
+	if cli.ConfigFile != config {
+		t.Errorf("%s != %s", cli.ConfigFile, config)
 	}
 }
