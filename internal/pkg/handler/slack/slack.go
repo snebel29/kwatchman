@@ -31,6 +31,10 @@ var (
 		"The slack webhook url (Required)").Envar("KW_SLACK_WEBHOOK").Short('w').Required().String()
 )
 
+func init() {
+	handler.Register("slack", NewSlackHandler())
+}
+
 func minInt(a, b int) int {
 	if a > b {
 		return b
