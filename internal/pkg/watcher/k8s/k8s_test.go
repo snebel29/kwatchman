@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"k8s.io/client-go/rest"
 	"os"
@@ -38,14 +39,28 @@ func TestGetK8sClient(t *testing.T) {
 
 func TestNewK8sWatcher(t *testing.T) {
 	kubeconfig := path.Join(path.Dir(thisFilename), "fixtures", "kubeconfig")
-	c := &cli.CLIArgs{Kubeconfig: kubeconfig}
-	w, err := NewK8sWatcher(c)
+	h := config.Handlers{{Name: "diff"}}
+	r := config.Resources{
+		{Kind: "deployment", Policies: []string{}},
+	}
+	c := &cli.CLIArgs{
+		Namespace:  "namespace",
+		Kubeconfig: kubeconfig,
+		ConfigFile: "",
+	}
+	conf := &config.Config{
+		Handlers:  h,
+		Resources: r,
+		CLI:       c,
+	}
+
+	w, err := NewK8sWatcher(conf)
 
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Errorf("%s getting NewK8sWatcher", err)
 	}
-	if w.opts != c {
-		t.Errorf("K8sWatcher.opts is not set correctly %#v", w.opts)
+	if w.config != conf {
+		t.Errorf("K8sWatcher.config is not set correctly %#v", w.config)
 	}
 }
 
@@ -65,7 +80,7 @@ func (w *ResourceWatcherMock) Shutdown() {
 
 func TestK8sWatcher(t *testing.T) {
 	w := &K8sWatcher{
-		opts: nil,
+		config: nil,
 		k8sResources: []watcher.ResourceWatcher{
 			&ResourceWatcherMock{},
 			&ResourceWatcherMock{},

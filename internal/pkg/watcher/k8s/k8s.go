@@ -2,7 +2,7 @@ package k8s
 
 import (
 	"fmt"
-	"github.com/snebel29/kwatchman/internal/pkg/cli"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher/k8s/resources"
@@ -14,12 +14,12 @@ import (
 )
 
 type K8sWatcher struct {
-	opts         *cli.CLIArgs
+	config       *config.Config
 	k8sResources []watcher.ResourceWatcher
 }
 
-func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
-	clientset, err := getK8sClient(c.Kubeconfig)
+func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
+	clientset, err := getK8sClient(c.CLI.Kubeconfig)
 	if err != nil {
 		return nil, err
 	}
@@ -35,10 +35,9 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 	)
 
 	return &K8sWatcher{
-		opts: c,
-		// TODO: Make resources configurable by user
+		config: c,
 		k8sResources: []watcher.ResourceWatcher{
-			resources.NewK8sDeploymentWatcher(clientset, c.Namespace, chainOfHandlers),
+			resources.NewK8sDeploymentWatcher(clientset, c.CLI.Namespace, chainOfHandlers),
 		},
 	}, nil
 }
