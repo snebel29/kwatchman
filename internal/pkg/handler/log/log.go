@@ -10,6 +10,10 @@ import (
 
 type logHandler struct{}
 
+func init() {
+	handler.Register("log", NewLogHandler())
+}
+
 func NewLogHandler() handler.Handler {
 	return &logHandler{}
 }

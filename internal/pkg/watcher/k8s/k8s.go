@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
-	"github.com/snebel29/kwatchman/internal/pkg/handler/diff"
-	"github.com/snebel29/kwatchman/internal/pkg/handler/log"
-	"github.com/snebel29/kwatchman/internal/pkg/handler/slack"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher/k8s/resources"
 	"k8s.io/client-go/kubernetes"
@@ -27,10 +24,14 @@ func NewK8sWatcher(c *cli.CLIArgs) (*K8sWatcher, error) {
 		return nil, err
 	}
 
+	var handlerList []handler.Handler
+
+	for _, _handler := range handler.Registry {
+		handlerList = append(handlerList, _handler)
+	}
+
 	chainOfHandlers := handler.NewChainOfHandlers(
-		diff.NewDiffHandler(),
-		slack.NewSlackHandler(),
-		log.NewLogHandler(),
+		handlerList...,
 	)
 
 	return &K8sWatcher{

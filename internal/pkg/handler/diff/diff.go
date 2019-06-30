@@ -12,6 +12,10 @@ import (
 	"os/exec"
 )
 
+func init() {
+	handler.Register("diff", NewDiffHandler())
+}
+
 type k8sObjectMetadata struct {
 	Annotations map[string]string `json:"annotations"`
 	Labels      map[string]string `json:"labels"`
