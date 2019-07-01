@@ -24,10 +24,15 @@ func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
 		return nil, err
 	}
 
-	var handlerList []handler.Handler
+	// TODO: Move HandlerList and ResourcesList outside
 
-	for _, _handler := range handler.Registry {
-		handlerList = append(handlerList, _handler)
+	var handlerList []handler.Handler
+	registeredHandlers := handler.GetRegistry()
+
+	for _, h := range c.Handlers {
+		if regHandler, ok := registeredHandlers[h.Name]; ok {
+			handlerList = append(handlerList, regHandler)
+		}
 	}
 
 	chainOfHandlers := handler.NewChainOfHandlers(
