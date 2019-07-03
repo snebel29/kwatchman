@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	log "github.com/sirupsen/logrus"
+	"github.com/snebel29/kwatchman/internal/pkg/registry"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 )
 
@@ -11,7 +12,7 @@ import (
 type logHandler struct{}
 
 func init() {
-	handler.Register("log", NewLogHandler())
+	registry.Register(registry.HANDLER, "log", NewLogHandler())
 }
 
 func NewLogHandler() handler.Handler {
