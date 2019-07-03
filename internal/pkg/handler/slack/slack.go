@@ -7,6 +7,7 @@ import (
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
+	"github.com/snebel29/kwatchman/internal/pkg/registry"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"strconv"
 	"strings"
@@ -32,7 +33,7 @@ var (
 )
 
 func init() {
-	handler.Register("slack", NewSlackHandler())
+	registry.Register(registry.HANDLER, "slack", NewSlackHandler())
 }
 
 func minInt(a, b int) int {

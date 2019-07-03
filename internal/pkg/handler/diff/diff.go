@@ -7,13 +7,14 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
+	"github.com/snebel29/kwatchman/internal/pkg/registry"
 	"io/ioutil"
 	"os"
 	"os/exec"
 )
 
 func init() {
-	handler.Register("diff", NewDiffHandler())
+	registry.Register(registry.HANDLER, "diff", NewDiffHandler())
 }
 
 type k8sObjectMetadata struct {

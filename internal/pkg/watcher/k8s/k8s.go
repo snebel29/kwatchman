@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
+	"github.com/snebel29/kwatchman/internal/pkg/registry"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher/k8s/resources"
 	"k8s.io/client-go/kubernetes"
@@ -27,11 +28,19 @@ func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
 	// TODO: Move HandlerList and ResourcesList outside
 
 	var handlerList []handler.Handler
-	registeredHandlers := handler.GetRegistry()
+	registeredHandlers, ok := registry.GetRegistry(registry.HANDLER)
+	if !ok {
+		return nil, fmt.Errorf("There is no handler registry available")
+	}
 
 	for _, h := range c.Handlers {
-		if regHandler, ok := registeredHandlers[h.Name]; ok {
-			handlerList = append(handlerList, regHandler)
+		if rh, ok := registeredHandlers[h.Name]; ok {
+			regHandler, ok := rh.(handler.Handler)
+			if !ok {
+				return nil, fmt.Errorf(
+					"handler %s is not of type handler.Handler but %T instead", h.Name, rh)
+			}
+			handlerList = append(handlerList, regHandler)	
 		}
 	}
 

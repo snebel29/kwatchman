@@ -4,6 +4,8 @@ import (
 	"github.com/snebel29/kwatchman/internal/pkg/cli"
 	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
+	// We need handler/log init() registeting the handler for testing
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/log"
 	"k8s.io/client-go/rest"
 	"os"
 	"path"
@@ -39,7 +41,8 @@ func TestGetK8sClient(t *testing.T) {
 
 func TestNewK8sWatcher(t *testing.T) {
 	kubeconfig := path.Join(path.Dir(thisFilename), "fixtures", "kubeconfig")
-	h := config.Handlers{{Name: "diff"}}
+	handlerToRegister := "log"
+	h := config.Handlers{{Name: handlerToRegister}}
 	r := config.Resources{
 		{Kind: "deployment", Policies: []string{}},
 	}
