@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"github.com/snebel29/kooper/operator/common"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
+	"github.com/snebel29/kwatchman/internal/pkg/registry"
 )
 
 type Handler interface {
@@ -65,6 +67,27 @@ func NewChainOfHandlers(handlers ...Handler) ChainOfHandlers {
 	return &chainOfHandlers{
 		handlers: handlers,
 	}
+}
+
+// GetHandlerListFromConfig return list of handler objects from configuration
+func GetHandlerListFromConfig(c *config.Config) ([]Handler, error) {
+	var handlerList []Handler
+	registeredHandlers, ok := registry.GetRegistry(registry.HANDLER)
+	if !ok {
+		return nil, errors.New("There is no handler registry available")
+	}
+
+	for _, h := range c.Handlers {
+		if rh, ok := registeredHandlers[h.Name]; ok {
+			regHandler, ok := rh.(Handler)
+			if !ok {
+				return nil, errors.Errorf(
+					"handler %s is not of type handler.Handler but %T instead", h.Name, rh)
+			}
+			handlerList = append(handlerList, regHandler)	
+		}
+	}
+	return handlerList, nil
 }
 
 func PrettyPrintJSON(_json []byte) ([]byte, error) {
