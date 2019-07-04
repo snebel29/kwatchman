@@ -7,6 +7,7 @@ import (
 	log_test "github.com/sirupsen/logrus/hooks/test"
 	"github.com/snebel29/kooper/operator/common"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -54,7 +55,7 @@ func TestDiffHandler(t *testing.T) {
 	// In order to unmarshal the differences
 
 	// A new key is added, no difference, no error, and nextRun == true should be expected
-	h1 := NewDiffHandler()
+	h1 := NewDiffHandler(config.Handler{})
 	key := "key1"
 
 	output, err := h1.Run(

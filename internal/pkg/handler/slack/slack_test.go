@@ -1,13 +1,11 @@
 package slack
 
 import (
-	"fmt"
 	"github.com/snebel29/kooper/operator/common"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
-	"gopkg.in/alecthomas/kingpin.v2"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"testing"
 )
@@ -45,43 +43,22 @@ func TestTruncate(t *testing.T) {
 	}
 }
 
-func TestCliArgs(t *testing.T) {
-	clusterName := "myCluster"
-	webhookURL := "http://myWebhookURL.com"
-	os.Args = []string{
-		"kwatchman",
-		fmt.Sprintf("--cluster-name=%s", clusterName),
-		fmt.Sprintf("--slack-webhook=%s", webhookURL),
-	}
-
-	kingpin.Parse()
-	cli := newCLI()
-	if cli.clusterName != clusterName {
-		t.Errorf("%s != %s", cli.clusterName, clusterName)
-	}
-	if cli.webhookURL != webhookURL {
-		t.Errorf("%s != %s", cli.webhookURL, webhookURL)
-	}
-}
-
 func TestMsgToSlack(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("{}"))
 	}))
-	defer ts.Close()
-
-	s := ts.URL
-	webhookURL = &s
-	c := "myCluster"
-	clusterName = &c
+	defer testServer.Close()
 
 	evt := &common.K8sEvent{}
 	manifest := []byte("manifest")
 	payload := []byte("payload")
 	resourceKind := "Deployment"
 
-	h := NewSlackHandler()
+	h := NewSlackHandler(config.Handler{
+		ClusterName: "myClusterName",
+		WebhookURL:  testServer.URL,
+	})
 	output, err := h.Run(nil, handler.Input{
 		Evt:          evt,
 		ResourceKind: resourceKind,

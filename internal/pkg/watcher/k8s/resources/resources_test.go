@@ -3,6 +3,7 @@ package resources
 import (
 	"github.com/snebel29/kooper/operator/common"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/handler/log"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	appsv1 "k8s.io/api/apps/v1"
@@ -31,7 +32,7 @@ func k8sIndividualResourceWatcherHelper(w watcher.ResourceWatcher, t *testing.T)
 }
 
 func TestK8sDeploymentWatcher(t *testing.T) {
-	chainOfHandlers := handler.NewChainOfHandlers(log.NewLogHandler())
+	chainOfHandlers := handler.NewChainOfHandlers(log.NewLogHandler(config.Handler{}))
 	k8sIndividualResourceWatcherHelper(NewK8sDeploymentWatcher(nil, "", chainOfHandlers), t)
 }
 

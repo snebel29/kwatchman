@@ -1,11 +1,29 @@
-package handler
+package handler_test
 
 import (
+	"fmt"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"context"
 	"github.com/snebel29/kooper/operator/common"
 	"reflect"
 	"testing"
+	"path"
+	"os"
+	"runtime"
+
+	// For the handlers to be registered
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/diff"
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/slack"
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/log"
 )
+
+var thisFilename string
+
+func init() {
+	_, t, _, _ := runtime.Caller(0)
+	thisFilename = t
+}
 
 // This test case effectively test both LogHandlerFunc and prettyPrintJSON
 func TestPrettyPrintJSON(t *testing.T) {
@@ -13,7 +31,7 @@ func TestPrettyPrintJSON(t *testing.T) {
 	arg := "{\"a\": 1}"
 	expected := "{\n \"a\": 1\n}"
 
-	returned, err := PrettyPrintJSON([]byte(arg))
+	returned, err := handler.PrettyPrintJSON([]byte(arg))
 	if err != nil {
 		t.Error(err)
 	}
@@ -23,18 +41,18 @@ func TestPrettyPrintJSON(t *testing.T) {
 }
 
 func TestChainOfHandlers_Run(t *testing.T) {
-	h1 := NewMockHandler()
-	h2 := NewMockHandler()
-	h3 := NewMockHandlerError()
+	h1 := handler.NewMockHandler()
+	h2 := handler.NewMockHandler()
+	h3 := handler.NewMockHandlerError()
 
-	ch := NewChainOfHandlers(h1, h2, h3)
+	ch := handler.NewChainOfHandlers(h1, h2, h3)
 
 	evt := &common.K8sEvent{}
 	manifest := []byte("manifest")
 	payload := []byte("payload")
 	resourceKind := "Deployment"
 
-	err := ch.Run(context.TODO(), Input{
+	err := ch.Run(context.TODO(), handler.Input{
 		Evt:          evt,
 		ResourceKind: resourceKind,
 		K8sManifest:  manifest,
@@ -64,5 +82,26 @@ func TestChainOfHandlers_Run(t *testing.T) {
 
 	if !reflect.DeepEqual(h1.PassedContext, context.TODO()) || !reflect.DeepEqual(h2.PassedContext, context.TODO()) {
 		t.Errorf("context should have been passed h1: %#v h2: %#v", h1.PassedContext, h2.PassedContext)
+	}
+}
+
+func TestGetHandlerListFromConfig(t *testing.T) {
+	configFile := path.Join(path.Dir(thisFilename), "fixtures", "config.toml")
+	os.Args = []string{
+		"kwatchman",
+		fmt.Sprintf("--config=%s", configFile),
+	}
+	
+
+	conf, err := config.NewConfig()
+	if err != nil {
+		t.Error("The config should have been parsed without errors")
+	}
+	handlerList, err := handler.GetHandlerListFromConfig(conf)
+	if err != nil {
+		t.Error("The handler list should have been returned without errors")
+	}
+	if len(handlerList) != 3 {
+		t.Errorf("handlerList should have 3 handlers, have %d instead", len(handlerList))
 	}
 }

@@ -8,32 +8,14 @@ import (
 	"github.com/pkg/errors"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
-	"gopkg.in/alecthomas/kingpin.v2"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"strconv"
 	"strings"
 	"time"
 )
 
-var (
-	// Event names here shoul match definition within kooper generic.go
-	// Info is not a valid k8sEvent but potentially used for internal kwatchman notifications
-	EventColour = map[string]string{
-		"Add":    "#1ADA00",
-		"Update": "#F39C12",
-		"Delete": "#FF0000",
-		"Info":   "#0000FF",
-	}
-	clusterName = kingpin.Flag(
-		"cluster-name",
-		"Name of k8s cluster where kwatchman is running, providing context into the notification").Default(
-		"Undefined cluster").Envar("KW_CLUSTERNAME").Short('c').String()
-	webhookURL = kingpin.Flag(
-		"slack-webhook",
-		"The slack webhook url (Required)").Envar("KW_SLACK_WEBHOOK").Short('w').Required().String()
-)
-
 func init() {
-	registry.Register(registry.HANDLER, "slack", NewSlackHandler())
+	registry.Register(registry.HANDLER, "slack", NewSlackHandler)
 }
 
 func minInt(a, b int) int {
@@ -54,20 +36,21 @@ type cliArgs struct {
 	webhookURL  string
 }
 
-func newCLI() *cliArgs {
-	return &cliArgs{
-		clusterName: *clusterName,
-		webhookURL:  *webhookURL,
-	}
-}
-
 type slackHandler struct {
-	opts *cliArgs
+	config      config.Handler
+	EventColour map[string]string
 }
 
-func NewSlackHandler() handler.Handler {
+// NewSlackHandler return the slack handler
+func NewSlackHandler(c config.Handler) handler.Handler {
 	return &slackHandler{
-		opts: newCLI(),
+		config: c,
+		EventColour: map[string]string{
+			"Add":    "#1ADA00",
+			"Update": "#F39C12",
+			"Delete": "#FF0000",
+			"Info":   "#0000FF",
+		},
 	}
 }
 
@@ -86,12 +69,12 @@ func (h *slackHandler) Run(ctx context.Context, input handler.Input) (handler.Ou
 	// https://api.slack.com/docs/message-attachments
 	attachment := slack.Attachment{
 		Title:      title,
-		Color:      EventColour[input.Evt.Kind],
+		Color:      h.EventColour[input.Evt.Kind],
 		Fallback:   title,
 		AuthorName: "snebel29/kwatchman",
 		AuthorLink: "https://github.com/snebel29/kwatchman",
 		Text:       text,
-		Footer:     h.opts.clusterName,
+		Footer:     h.config.ClusterName,
 		Ts:         json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
 	}
 	msg := &slack.WebhookMessage{
@@ -104,7 +87,7 @@ func (h *slackHandler) Run(ctx context.Context, input handler.Input) (handler.Ou
 		RunNext:     true,
 	}
 
-	err := slack.PostWebhook(h.opts.webhookURL, msg)
+	err := slack.PostWebhook(h.config.WebhookURL, msg)
 	if err != nil {
 		err = errors.Wrap(err, "PostWebhook: ")
 		output.RunNext = false

@@ -8,13 +8,14 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"io/ioutil"
 	"os"
 	"os/exec"
 )
 
 func init() {
-	registry.Register(registry.HANDLER, "diff", NewDiffHandler())
+	registry.Register(registry.HANDLER, "diff", NewDiffHandler)
 }
 
 type k8sObjectMetadata struct {
@@ -40,12 +41,14 @@ type k8sObject struct {
 }
 
 type diffHandler struct {
+	config             config.Handler
 	annotationsToClean []string
 	storage            *storage
 }
 
-func NewDiffHandler() handler.Handler {
+func NewDiffHandler(c config.Handler) handler.Handler {
 	return &diffHandler{
+		config:  c,
 		annotationsToClean: []string{
 			"deployment.kubernetes.io/revision",
 			"kubectl.kubernetes.io/last-applied-configuration",

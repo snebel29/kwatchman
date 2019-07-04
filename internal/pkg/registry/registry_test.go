@@ -21,7 +21,7 @@ func TestRegistry(t *testing.T) {
 	}
 
 	// Force another register
-	registry.Register(registryName, "log2", log_handler.NewLogHandler())
+	registry.Register(registryName, "log2", log_handler.NewLogHandler)
 	expected = 2
 	if len(handlerList) != expected {
 		t.Errorf("handlerList length should be %d but got %d instead", expected, len(handlerList))

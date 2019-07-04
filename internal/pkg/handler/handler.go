@@ -70,6 +70,7 @@ func NewChainOfHandlers(handlers ...Handler) ChainOfHandlers {
 }
 
 // GetHandlerListFromConfig return list of handler objects from configuration
+// their position in the list matches the defined user execution sequence
 func GetHandlerListFromConfig(c *config.Config) ([]Handler, error) {
 	var handlerList []Handler
 	registeredHandlers, ok := registry.GetRegistry(registry.HANDLER)
@@ -77,14 +78,14 @@ func GetHandlerListFromConfig(c *config.Config) ([]Handler, error) {
 		return nil, errors.New("There is no handler registry available")
 	}
 
-	for _, h := range c.Handlers {
-		if rh, ok := registeredHandlers[h.Name]; ok {
-			regHandler, ok := rh.(Handler)
+	for _, configHandler := range c.Handlers {
+		if rh, ok := registeredHandlers[configHandler.Name]; ok {
+			regHandler, ok := rh.(func(config.Handler) Handler)
 			if !ok {
 				return nil, errors.Errorf(
-					"handler %s is not of type handler.Handler but %T instead", h.Name, rh)
+					"handler %s is not of type func() Handler but %T instead", configHandler.Name, rh)
 			}
-			handlerList = append(handlerList, regHandler)	
+			handlerList = append(handlerList, regHandler(configHandler))	
 		}
 	}
 	return handlerList, nil
