@@ -7,13 +7,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Handlers []struct {
+type Handlers []Handler
+type Handler struct {
 	Name        string
 	ClusterName string
 	WebhookURL  string
 }
 
-type Resources []struct {
+type Resources []Resource
+type Resource struct {
 	Kind     string
 	Policies []string
 }

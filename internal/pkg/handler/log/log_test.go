@@ -1,6 +1,7 @@
 package log
 
 import (
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	log_test "github.com/sirupsen/logrus/hooks/test"
 	"github.com/snebel29/kooper/operator/common"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
@@ -12,7 +13,7 @@ func TestLogHandlerFunc(t *testing.T) {
 
 	hook := log_test.NewGlobal()
 
-	h := NewLogHandler()
+	h := NewLogHandler(config.Handler{})
 
 	evt := &common.K8sEvent{}
 	manifest := []byte("{\"a\": 1}")

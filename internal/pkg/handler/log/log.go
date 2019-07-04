@@ -5,18 +5,23 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 )
 
 //TODO: Fix returning errors within handlers functions cause kwatch to panic!!!
 
-type logHandler struct{}
-
-func init() {
-	registry.Register(registry.HANDLER, "log", NewLogHandler())
+type logHandler struct{
+	config config.Handler
 }
 
-func NewLogHandler() handler.Handler {
-	return &logHandler{}
+func init() {
+	registry.Register(registry.HANDLER, "log", NewLogHandler)
+}
+
+func NewLogHandler(c config.Handler) handler.Handler {
+	return &logHandler{
+		config: c,
+	}
 }
 
 // log Run can be used for debugging, troubleshooting and testing
