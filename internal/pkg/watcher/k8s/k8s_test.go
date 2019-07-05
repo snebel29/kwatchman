@@ -65,6 +65,9 @@ func TestNewK8sWatcher(t *testing.T) {
 	if w.config != conf {
 		t.Errorf("K8sWatcher.config is not set correctly %#v", w.config)
 	}
+	if len(w.k8sResources) != 1 {
+		t.Errorf("There should be 1 resource, but there is %d instead", len(w.k8sResources))
+	}
 }
 
 type ResourceWatcherMock struct {

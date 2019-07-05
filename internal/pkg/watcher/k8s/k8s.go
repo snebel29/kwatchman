@@ -29,15 +29,22 @@ func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
 		return nil, err
 	}
 
-	chainOfHandlers := handler.NewChainOfHandlers(
-		handlerList...,
-	)
+	chainOfHandlers := handler.NewChainOfHandlers(handlerList...)
+
+	resourcesFuncList, err := resources.GetResourcesFuncListFromConfig(c)
+	if err != nil {
+		return nil, err
+	}
 
 	return &K8sWatcher{
 		config: c,
-		k8sResources: []watcher.ResourceWatcher{
-			resources.NewK8sDeploymentWatcher(clientset, c.CLI.Namespace, chainOfHandlers),
-		},
+		k8sResources: resources.GetResourceWatcherList(
+			resourcesFuncList,
+			resources.ResourceWatcherArgs{
+				Clientset: clientset,
+				Namespace: c.CLI.Namespace,
+				ChainOfHandlers: chainOfHandlers,
+		}),
 	}, nil
 }
 
