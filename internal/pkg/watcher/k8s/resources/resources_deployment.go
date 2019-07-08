@@ -8,7 +8,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 
-	kooper_handler "github.com/snebel29/kooper/operator/handler"
 	"github.com/snebel29/kooper/operator/retrieve"
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
@@ -25,6 +24,8 @@ func init() {
 // NewDeploymentWatcher return a watcher for k8s deployments
 func NewDeploymentWatcher(arg ResourceWatcherArgs) watcher.ResourceWatcher {
 
+	resourceKind := DEPLOYMENT
+
 	retr := &retrieve.Resource{
 		Object: &appsv1.Deployment{},
 		ListerWatcher: &cache.ListWatch{
@@ -37,10 +38,7 @@ func NewDeploymentWatcher(arg ResourceWatcherArgs) watcher.ResourceWatcher {
 		},
 	}
 
-	fn := newKooperHandlerFunction(arg.ChainOfHandlers, DEPLOYMENT)
-	hand := &kooper_handler.HandlerFunc{
-		AddFunc:    fn,
-		DeleteFunc: fn,
-	}
-	return newK8sResourceWatcher(DEPLOYMENT, hand, retr)
+	return newK8sResourceWatcher(
+		resourceKind, newResourceHandlerFunc(arg.ChainOfHandlers, resourceKind),
+		retr)
 }

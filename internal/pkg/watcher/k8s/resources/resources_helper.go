@@ -8,6 +8,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	kooper "github.com/snebel29/kooper/operator/common"
+	kooper_handler "github.com/snebel29/kooper/operator/handler"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
@@ -80,6 +81,14 @@ func newKooperHandlerFunction(
 		return nil
 	}
 	return fn
+}
+
+func newResourceHandlerFunc(ch handler.ChainOfHandlers, resourceKind string) *kooper_handler.HandlerFunc {
+	fn := newKooperHandlerFunction(ch, resourceKind)
+	return &kooper_handler.HandlerFunc{
+		AddFunc:    fn,
+		DeleteFunc: fn,
+	}
 }
 
 // GetResourcesListFromConfig return list of resource objects from configuration
