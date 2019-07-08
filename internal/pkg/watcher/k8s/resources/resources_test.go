@@ -30,7 +30,7 @@ func TestNewResourceWatcher(t *testing.T) {
 		NewStatefulsetWatcher,
 		NewDaemonsetWatcher,
 		NewServiceWatcher,
-		//NewIngressWatcher,
+		NewIngressWatcher,
 	}
 
 	chainOfHandlers := handler.NewChainOfHandlers(log.NewLogHandler(config.Handler{}))
