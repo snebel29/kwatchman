@@ -28,6 +28,9 @@ func TestNewResourceWatcher(t *testing.T) {
 	resourcesFactoryToTest := []func(ResourceWatcherArgs) watcher.ResourceWatcher{
 		NewDeploymentWatcher,
 		NewStatefulsetWatcher,
+		NewDaemonsetWatcher,
+		//NewServiceWatcher,
+		//NewIngressWatcher,
 	}
 
 	chainOfHandlers := handler.NewChainOfHandlers(log.NewLogHandler(config.Handler{}))
