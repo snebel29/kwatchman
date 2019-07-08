@@ -29,7 +29,7 @@ func TestNewResourceWatcher(t *testing.T) {
 		NewDeploymentWatcher,
 		NewStatefulsetWatcher,
 		NewDaemonsetWatcher,
-		//NewServiceWatcher,
+		NewServiceWatcher,
 		//NewIngressWatcher,
 	}
 
