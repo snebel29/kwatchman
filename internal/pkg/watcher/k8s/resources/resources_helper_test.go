@@ -147,7 +147,7 @@ func TestGetResourceFuncListFromConfig(t *testing.T) {
 
 func TestGetResourceWatcherList(t *testing.T) {
 	resourcesFuncList := []func(ResourceWatcherArgs) watcher.ResourceWatcher{
-		NewK8sDeploymentWatcher,
+		NewDeploymentWatcher,
 	}
 	rwl := GetResourceWatcherList(
 		resourcesFuncList,

@@ -24,7 +24,7 @@ func k8sIndividualResourceWatcherHelper(w watcher.ResourceWatcher, t *testing.T)
 
 func TestK8sDeploymentWatcher(t *testing.T) {
 	chainOfHandlers := handler.NewChainOfHandlers(log.NewLogHandler(config.Handler{}))
-	dw := NewK8sDeploymentWatcher(ResourceWatcherArgs{
+	dw := NewDeploymentWatcher(ResourceWatcherArgs{
 		Clientset: nil,
 		Namespace: "",
 		ChainOfHandlers: chainOfHandlers,

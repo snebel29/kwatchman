@@ -10,8 +10,8 @@ import (
 
 	kooper_handler "github.com/snebel29/kooper/operator/handler"
 	"github.com/snebel29/kooper/operator/retrieve"
-	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
+	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 )
 
 const (
@@ -19,11 +19,11 @@ const (
 )
 
 func init() {
-	registry.Register(registry.RESOURCES, DEPLOYMENT, NewK8sDeploymentWatcher)
+	registry.Register(registry.RESOURCES, DEPLOYMENT, NewDeploymentWatcher)
 }
 
-// NewK8sDeploymentWatcher return a watcher for k8s deployments
-func NewK8sDeploymentWatcher(arg ResourceWatcherArgs) watcher.ResourceWatcher {
+// NewDeploymentWatcher return a watcher for k8s deployments
+func NewDeploymentWatcher(arg ResourceWatcherArgs) watcher.ResourceWatcher {
 
 	retr := &retrieve.Resource{
 		Object: &appsv1.Deployment{},
