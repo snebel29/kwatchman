@@ -22,12 +22,22 @@ func k8sIndividualResourceWatcherHelper(w watcher.ResourceWatcher, t *testing.T)
 	}
 }
 
-func TestK8sDeploymentWatcher(t *testing.T) {
+
+func TestNewResourceWatcher(t *testing.T) {
+
+	resourcesFactoryToTest := []func(ResourceWatcherArgs) watcher.ResourceWatcher{
+		NewDeploymentWatcher,
+		NewStatefulsetWatcher,
+	}
+
 	chainOfHandlers := handler.NewChainOfHandlers(log.NewLogHandler(config.Handler{}))
-	dw := NewDeploymentWatcher(ResourceWatcherArgs{
+	rwa := ResourceWatcherArgs{
 		Clientset: nil,
 		Namespace: "",
 		ChainOfHandlers: chainOfHandlers,
-	})
-	k8sIndividualResourceWatcherHelper(dw, t)
+	}
+
+	for _, r := range resourcesFactoryToTest {
+		k8sIndividualResourceWatcherHelper(r(rwa), t)
+	}
 }
