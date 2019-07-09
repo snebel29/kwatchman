@@ -2,8 +2,20 @@
 [[resource]]
 kind = "deployment"
 policies = [
-  "cleanReplicasIfPodAutoscaling"
+  "cleanReplicasIfPodAutoscaling" #This policy is not implemented yet
 ]
+
+[[resource]]
+kind = "service"
+
+[[resource]]
+kind = "statefulset"
+
+[[resource]]
+kind = "daemonset"
+
+[[resource]]
+kind = "ingress"
 
 # Handlers will be trigger in this specific order
 # Diff handler should typically be the first handler to trigger

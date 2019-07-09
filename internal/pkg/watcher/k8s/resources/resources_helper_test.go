@@ -139,7 +139,7 @@ func TestGetResourceFuncListFromConfig(t *testing.T) {
 	if err != nil {
 		t.Error("The resource list should have been returned without errors")
 	}
-	expected := 1
+	expected := 5
 	if len(resourceList) != expected {
 		t.Errorf("resourceList should have %d resource, have %d instead", expected, len(resourceList))
 	}
@@ -148,6 +148,10 @@ func TestGetResourceFuncListFromConfig(t *testing.T) {
 func TestGetResourceWatcherList(t *testing.T) {
 	resourcesFuncList := []func(ResourceWatcherArgs) watcher.ResourceWatcher{
 		NewDeploymentWatcher,
+		NewServiceWatcher,
+		NewDaemonsetWatcher,
+		NewIngressWatcher,
+		NewStatefulsetWatcher,
 	}
 	rwl := GetResourceWatcherList(
 		resourcesFuncList,
@@ -156,7 +160,7 @@ func TestGetResourceWatcherList(t *testing.T) {
 				Namespace: "",
 				ChainOfHandlers: nil,
 	})
-	expected := 1
+	expected := 5
 	if len(rwl) != expected {
 		t.Errorf("resource watcher list should have %d resource, have %d instead", expected, len(rwl))
 	}
