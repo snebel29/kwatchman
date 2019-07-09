@@ -11,6 +11,11 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"sync"
+
+	//Register handlers to be available for configuration
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/log"
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/diff"
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/slack"
 )
 
 type K8sWatcher struct {

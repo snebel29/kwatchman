@@ -31,7 +31,7 @@ func Register(registryName, itemName string, item interface{}) {
 
 // GetRegistry returns the global item registry
 func GetRegistry(registryName string) (ItemsRegistry, bool) {
-	log.Warnf("globalRegistry: %#v", globalRegistry)
+	log.Debugf("globalRegistry: %#v", globalRegistry)
 	if r, exists := globalRegistry[registryName]; exists {
 		return r, exists
 	}
