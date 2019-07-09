@@ -66,7 +66,7 @@ func TestGetManifest(t *testing.T) {
 		t.Errorf("%s Should match with %s", string(r), expected)
 	}
 
-	r, err = getManifest(&appsv1.DaemonSet{})
+	r, err = getManifest(&appsv1.ReplicaSet{})
 	if err == nil {
 		t.Error("err should be error")
 	}

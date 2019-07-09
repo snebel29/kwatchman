@@ -18,7 +18,7 @@ const (
 )
 
 func init() {
-	registry.Register(registry.RESOURCES, INGRESS, NewServiceWatcher)
+	registry.Register(registry.RESOURCES, INGRESS, NewIngressWatcher)
 }
 
 // NewIngressWatcher return a watcher for k8s ingress

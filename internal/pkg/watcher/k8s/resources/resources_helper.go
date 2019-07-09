@@ -7,6 +7,9 @@ import (
 	"github.com/pkg/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	extensions_v1beta1 "k8s.io/api/extensions/v1beta1"
+
 	kooper "github.com/snebel29/kooper/operator/common"
 	kooper_handler "github.com/snebel29/kooper/operator/handler"
 	"k8s.io/client-go/kubernetes"
@@ -36,6 +39,18 @@ func getManifest(obj interface{}) ([]byte, error) {
 	case *appsv1.Deployment:
 		return marshal(v)
 
+	case *appsv1.StatefulSet:
+		return marshal(v)
+
+	case *appsv1.DaemonSet:
+		return marshal(v)
+
+	case *corev1.Service:
+		return marshal(v)
+
+	case *extensions_v1beta1.Ingress:
+		return marshal(v)
+		
 	default:
 		return nil, fmt.Errorf("Unknown type %T for %#v object", obj, obj)
 	}
