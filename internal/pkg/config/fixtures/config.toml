@@ -16,4 +16,4 @@ name = "log"
 [[handler]]
 name        = "slack"
 clusterName = "myClusterName"
-webhookURL  = "https://xxx.slack.com"
+webhookURL  = "https://slack-webhook-url"
