@@ -23,13 +23,21 @@ func init() {
 func TestGetK8sClient(t *testing.T) {
 	// Test InClusterConfig() simulating being within k8s cluster
 	// https://github.com/snebel29/kwatchman/blob/master/vendor/k8s.io/client-go/rest/config.go#L315-L345
-	os.Setenv("KUBERNETES_SERVICE_HOST", "anyValue")
-	os.Setenv("KUBERNETES_SERVICE_PORT", "anyValue")
+	if err := os.Setenv("KUBERNETES_SERVICE_HOST", "anyValue"); err != nil {
+		t.Error(err)
+	}
+	if err := os.Setenv("KUBERNETES_SERVICE_PORT", "anyValue"); err != nil {
+		t.Error(err)
+	}
 	if _, err := getK8sClient(""); err == rest.ErrNotInCluster {
 		t.Error("getK8sClientInCluster() should behave like living within cluster")
 	}
-	os.Unsetenv("KUBERNETES_SERVICE_HOST")
-	os.Unsetenv("KUBERNETES_SERVICE_PORT")
+	if err := os.Unsetenv("KUBERNETES_SERVICE_HOST"); err != nil {
+		t.Error(err)
+	}
+	if err := os.Unsetenv("KUBERNETES_SERVICE_PORT"); err != nil {
+		t.Error(err)
+	}
 
 	// Test getK8sClientOutCluster()
 	kubeconfig := path.Join(path.Dir(thisFilename), "fixtures", "kubeconfig")

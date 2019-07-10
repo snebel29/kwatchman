@@ -32,7 +32,9 @@ func TestStart(t *testing.T) {
 	defer patch.Unpatch()
 
 	// Run the Start function
-	Start(watcherMock)
+	if err := Start(watcherMock); err != nil {
+		t.Error(err)
+	}
 
 	if !watcherMock.RunCalled {
 		t.Error("watcher.Run() wasn't called")

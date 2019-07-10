@@ -2,8 +2,8 @@ package slack
 
 import (
 	"github.com/snebel29/kooper/operator/common"
-	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/config"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -46,7 +46,10 @@ func TestTruncate(t *testing.T) {
 func TestMsgToSlack(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("{}"))
+		_, err := w.Write([]byte("{}"))
+		if err != nil {
+			t.Error(err)
+		}
 	}))
 	defer testServer.Close()
 

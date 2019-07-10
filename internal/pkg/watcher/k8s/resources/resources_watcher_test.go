@@ -53,7 +53,9 @@ func TestK8sResourceWatcher(t *testing.T) {
 
 	//Test Run() starts controller by calling ctrl.Run()
 	rw.ctrl = &KooperControllerMock{}
-	rw.Run()
+	if err := rw.Run(); err != nil {
+		t.Error(err)
+	}
 	if runCalled == false {
 		t.Error("ctrl.Run() should have been called")
 	}
