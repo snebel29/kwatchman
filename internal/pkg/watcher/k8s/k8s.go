@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
@@ -55,20 +56,36 @@ func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
 
 // Run start k8s controller for each k8s resource
 func (w *K8sWatcher) Run() error {
+	// Mo matter what, either an error or a legitime shutdown returning nil,
+	// at the end we shutdown the watcher with all its ResourceWatchers
 	defer w.Shutdown()
 
 	var wg sync.WaitGroup
+
+	// errC will block until either all controllers finish or any of them return an error
+	errC := make(chan error, 1)
+
+	// Run each controller on its own goroutine and block until finish or failed
 	for _, rw := range w.k8sResources {
 		wg.Add(1)
-		go func(r watcher.ResourceWatcher) {
+		// For extra safety we pass resource watcher and channel as parameters
+		// although the wait group can be safely "closurized"
+		go func(r watcher.ResourceWatcher, errC chan<- error) {
 			defer wg.Done()
-			// TODO: Handle errors?
-			r.Run()
-		}(rw)
+			if err := r.Run(); err != nil {
+				errC <- errors.Wrap(err, "K8sWatcher Run()")
+			}
+		}(rw, errC)
 	}
 
-	wg.Wait()
-	return nil
+	// Effectively blocks until all controllers finish its execution, this is a controlled shutdown
+	go func() {
+		wg.Wait()
+		errC <- nil
+	}()
+
+	// Return either an error or nil
+	return <-errC
 }
 
 func (w *K8sWatcher) Shutdown() {
