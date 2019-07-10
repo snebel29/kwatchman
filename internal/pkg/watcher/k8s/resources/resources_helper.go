@@ -14,10 +14,10 @@ import (
 	kooper_handler "github.com/snebel29/kooper/operator/handler"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/config"
-	"github.com/snebel29/kwatchman/internal/pkg/watcher"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
+	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 )
 
 type ResourceWatcherArgs struct {
@@ -50,9 +50,9 @@ func getManifest(obj interface{}) ([]byte, error) {
 
 	case *extensions_v1beta1.Ingress:
 		return marshal(v)
-		
+
 	default:
-		return nil, fmt.Errorf("Unknown type %T for %#v object", obj, obj)
+		return nil, fmt.Errorf("unknown type %T for %#v object", obj, obj)
 	}
 }
 
@@ -79,7 +79,7 @@ func newKooperHandlerFunction(
 			manifest = []byte{}
 
 		default:
-			return fmt.Errorf("Unknown evt.Kind %s", evt.Kind)
+			return fmt.Errorf("unknown evt.Kind %s", evt.Kind)
 		}
 
 		err = chainOfHandlers.Run(nil, handler.Input{

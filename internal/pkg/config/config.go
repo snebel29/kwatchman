@@ -50,7 +50,7 @@ func NewConfig() (*Config, error) {
 
 	log.Debugf("Running kwatchman with config %#v", config)
 	if config.Resources == nil || config.Handlers == nil {
-		return nil, fmt.Errorf("Malformed %s config file", c.ConfigFile)
+		return nil, fmt.Errorf("malformed %s config file", c.ConfigFile)
 	}
 	return config, nil
 }
