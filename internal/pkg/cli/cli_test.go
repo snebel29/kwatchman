@@ -16,7 +16,7 @@ func TestCLIWrongArgsExitCode(t *testing.T) {
 	cmd := exec.Command(os.Args[0], "-test.run=TestCLIWrongArgsExitCode")
 	cmd.Env = append(os.Environ(), "TESTING=true")
 	err := cmd.Run()
-	if err.Error() == fmt.Sprintf("exit status %d", expectedExitCode) {
+	if err != nil && err.Error() == fmt.Sprintf("exit status %d", expectedExitCode) {
 		return
 	}
 	t.Errorf("process ran with %v, want exit status %d", err, expectedExitCode)
