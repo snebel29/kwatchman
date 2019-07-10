@@ -13,8 +13,8 @@ import (
 	"sync"
 
 	//Register handlers to be available for configuration
-	_ "github.com/snebel29/kwatchman/internal/pkg/handler/log"
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/diff"
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/log"
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/slack"
 )
 
@@ -46,10 +46,10 @@ func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
 		k8sResources: resources.GetResourceWatcherList(
 			resourcesFuncList,
 			resources.ResourceWatcherArgs{
-				Clientset: clientset,
-				Namespace: c.CLI.Namespace,
+				Clientset:       clientset,
+				Namespace:       c.CLI.Namespace,
 				ChainOfHandlers: chainOfHandlers,
-		}),
+			}),
 	}, nil
 }
 
@@ -102,7 +102,7 @@ func getK8sClient(kubeconfigFile string) (kubernetes.Interface, error) {
 	// Generate new clientset from the config (either produced In or Out cluster)
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, fmt.Errorf("Can't create kubernetes client: %s", err)
+		return nil, fmt.Errorf("can't create kubernetes client: %s", err)
 	}
 	return clientset, nil
 }
