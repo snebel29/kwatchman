@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	log_test "github.com/sirupsen/logrus/hooks/test"
 	"github.com/snebel29/kooper/operator/common"
-	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/config"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -33,7 +33,10 @@ func TestCleanK8sManifest(t *testing.T) {
 	}
 	cleaned, _ := cleanK8sManifest([]byte(manifest), annotationsToClean)
 	obj := &k8sObject{}
-	json.Unmarshal(cleaned, obj)
+	err := json.Unmarshal(cleaned, obj)
+	if err != nil {
+		t.Error(err)
+	}
 	if obj.Metadata.Generation != 0 {
 		t.Errorf("Metadata.Generation should be nil, got %v instead", obj.Metadata.Generation)
 	}
