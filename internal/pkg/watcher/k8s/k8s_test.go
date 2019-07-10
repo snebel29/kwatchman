@@ -5,6 +5,7 @@ import (
 	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	// We need handler/log init() registeting the handler for testing
+	"errors"
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/log"
 	"k8s.io/client-go/rest"
 	"os"
@@ -92,7 +93,21 @@ func (w *ResourceWatcherMock) Shutdown() {
 	w.ShutdownCalled = true
 }
 
-func TestK8sWatcher(t *testing.T) {
+type ResourceWatcherWithErrorMock struct {
+	RunCalled      bool
+	ShutdownCalled bool
+}
+
+func (w *ResourceWatcherWithErrorMock) Run() error {
+	w.RunCalled = true
+	return errors.New("simulated error")
+}
+
+func (w *ResourceWatcherWithErrorMock) Shutdown() {
+	w.ShutdownCalled = true
+}
+
+func TestK8sWatcherRunAndShutdownNormally(t *testing.T) {
 	w := &K8sWatcher{
 		config: nil,
 		k8sResources: []watcher.ResourceWatcher{
@@ -102,7 +117,11 @@ func TestK8sWatcher(t *testing.T) {
 		},
 	}
 
-	w.Run()
+	err := w.Run()
+	if err != nil {
+		t.Error(err)
+	}
+
 	for i, rwi := range w.k8sResources {
 		rw := rwi.(*ResourceWatcherMock)
 		if !rw.RunCalled {
@@ -118,5 +137,21 @@ func TestK8sWatcher(t *testing.T) {
 			t.Errorf("ResourceWatcherMock %v Shutdown() should have been called %#v", i, rw)
 		}
 
+	}
+}
+
+func TestK8sWatcherRunAndFailWithErrors(t *testing.T) {
+	w := &K8sWatcher{
+		config: nil,
+		k8sResources: []watcher.ResourceWatcher{
+			&ResourceWatcherMock{},
+			&ResourceWatcherWithErrorMock{},
+			&ResourceWatcherMock{},
+		},
+	}
+
+	err := w.Run()
+	if err == nil {
+		t.Errorf("An error should have being returned %s", err)
 	}
 }
