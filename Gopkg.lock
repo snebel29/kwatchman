@@ -776,6 +776,7 @@
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",
     "github.com/sirupsen/logrus/hooks/test",
+    "github.com/snebel29/kooper/monitoring/metrics",
     "github.com/snebel29/kooper/operator/common",
     "github.com/snebel29/kooper/operator/controller",
     "github.com/snebel29/kooper/operator/handler",
