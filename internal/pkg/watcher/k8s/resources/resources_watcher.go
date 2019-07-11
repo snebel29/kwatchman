@@ -29,8 +29,10 @@ func (r *K8sResourceWatcher) Run() error {
 }
 
 func (r *K8sResourceWatcher) Shutdown() {
-	log.Printf("Shutdown K8sResourceWatcher with kind %v\n", r.kind)
-	r.stopC <- struct{}{} //FIX: It's not really stopping the kooper controller
+	// FIXME: Shutdown is not really stopping the kooper controller, althought upstream
+	// the stop signal is trigerring a general shutdown followed by exit, this may change in the future!!
+	log.Printf("Shutdown signal received for K8sResourceWatcher with kind %v, the controller is not being explicitly stopped but the whole kwatchman exits upstream\n", r.kind)
+	r.stopC <- struct{}{}
 }
 
 func newK8sResourceWatcher(kind string, hand *handler.HandlerFunc, retr *retrieve.Resource) watcher.ResourceWatcher {
