@@ -1,21 +1,21 @@
 package handler_test
 
 import (
-	"fmt"
-	"github.com/snebel29/kwatchman/internal/pkg/handler"
-	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"context"
+	"fmt"
 	"github.com/snebel29/kooper/operator/common"
-	"reflect"
-	"testing"
-	"path"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"os"
+	"path"
+	"reflect"
 	"runtime"
+	"testing"
 
 	// For the handlers to be registered
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/diff"
-	_ "github.com/snebel29/kwatchman/internal/pkg/handler/slack"
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/log"
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/slack"
 )
 
 var thisFilename string
@@ -44,6 +44,7 @@ func TestChainOfHandlers_Run(t *testing.T) {
 	h1 := handler.NewMockHandler()
 	h2 := handler.NewMockHandler()
 	h3 := handler.NewMockHandlerError()
+	h4 := handler.NewMockHandler()
 
 	ch := handler.NewChainOfHandlers(h1, h2, h3)
 
@@ -59,12 +60,16 @@ func TestChainOfHandlers_Run(t *testing.T) {
 		Payload:      payload,
 	})
 
-	if err == nil {
-		t.Error("Last handler function should have returned an error")
-	}
-
 	if h1.Called != true || h2.Called != true {
 		t.Errorf("handlers should have been called h1: %t h2: %t", h1.Called, h2.Called)
+	}
+
+	if err == nil {
+		t.Error("h3 should have returned an error")
+	}
+
+	if h4.Called == true {
+		t.Error("handler4 should have not being called since there was an error")
 	}
 
 	if h1.PassedResourceKind != resourceKind ||
@@ -91,7 +96,6 @@ func TestGetHandlerListFromConfig(t *testing.T) {
 		"kwatchman",
 		fmt.Sprintf("--config=%s", configFile),
 	}
-	
 
 	conf, err := config.NewConfig()
 	if err != nil {
