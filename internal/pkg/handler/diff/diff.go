@@ -2,7 +2,6 @@ package diff
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -16,28 +15,6 @@ import (
 
 func init() {
 	registry.Register(registry.HANDLER, "diff", NewDiffHandler)
-}
-
-type k8sObjectMetadata struct {
-	Annotations map[string]string `json:"annotations"`
-	Labels      map[string]string `json:"labels"`
-
-	Generation int `json:"-"` // generation will be omitted by json.Marshal
-
-	CreationTimestamp string `json:"creationTimestamp"`
-	Name              string `json:"name"`
-	Namespace         string `json:"namespace"`
-	ResourceVersion   string `json:"-"` // resourceVersion will be omitted by json.Marshal
-	SelfLink          string `json:"selfLink"`
-	Uid               string `json:"uid"`
-}
-
-type k8sObject struct {
-	ApiVersion string            `json:"apiVersion"`
-	Kind       string            `json:"kind"`
-	Metadata   k8sObjectMetadata `json:"metadata"`
-	Spec       interface{}       `json:"spec"`
-	Status     interface{}       `json:"-"` // status will be omitted by json.Marshal
 }
 
 type diffHandler struct {
@@ -57,64 +34,17 @@ func NewDiffHandler(c config.Handler) handler.Handler {
 	}
 }
 
-func filterMapByKey(m map[string]string, toFilter []string) {
-	for _, k := range toFilter {
-		delete(m, k)
-	}
-}
-
-func cleanAnnotations(obj *k8sObject, annotationsToClean []string) {
-	if obj.Metadata.Annotations == nil {
-		obj.Metadata.Annotations = make(map[string]string)
-	}
-	filterMapByKey(
-		obj.Metadata.Annotations,
-		annotationsToClean,
-	)
-}
-
-// cleanK8sManifest cleans metadata information and indent the manifest in preparation for text
-// comparisons
-func cleanK8sManifest(manifest []byte, annotationsToClean []string) ([]byte, error) {
-	obj := &k8sObject{}
-
-	if err := json.Unmarshal(manifest, obj); err != nil {
-		return nil, errors.Wrap(err, "cleanK8sManifest Unmarshal")
-	}
-
-	cleanAnnotations(obj, annotationsToClean)
-
-	_cleanK8sManifest, err := json.Marshal(obj)
-	if err != nil {
-		return nil, errors.Wrap(err, "cleanK8sManifest Marshal")
-	}
-
-	_json, err := handler.PrettyPrintJSON(_cleanK8sManifest)
-	if err != nil {
-		return nil, errors.Wrap(err, "cleanK8sManifest prettyPrintJSON")
-	}
-
-	return _json, nil
-}
-
-func stopHandlerWithError(input handler.Input, err error) (handler.Output, error) {
-	return handler.Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     false}, err
-}
-
 func getObjID(input handler.Input) string {
 	return fmt.Sprintf("%s/%s", input.Evt.Key, input.ResourceKind)
 }
 
+func (h *diffHandler) error(err error) (handler.Output, error) {
+	return handler.Output{}, err
+}
+
 func (h *diffHandler) runAdd(ctx context.Context, input handler.Input) (handler.Output, error) {
 
-	cleanedManifest, err := cleanK8sManifest(input.K8sManifest, h.annotationsToClean)
-	if err != nil {
-		return stopHandlerWithError(input, err)
-	}
-
+	cleanedManifest := input.K8sManifest
 	h.storage.Add(getObjID(input), cleanedManifest)
 
 	runNext := true
@@ -133,20 +63,17 @@ func (h *diffHandler) runAdd(ctx context.Context, input handler.Input) (handler.
 
 func (h *diffHandler) runUpdate(ctx context.Context, input handler.Input) (handler.Output, error) {
 
-	cleanedManifest, err := cleanK8sManifest(input.K8sManifest, h.annotationsToClean)
-	if err != nil {
-		return stopHandlerWithError(input, err)
-	}
-
 	var diff []byte
+	var err error
 	runNext := false
+	cleanedManifest := input.K8sManifest
 
 	// Since this is an update, there should be a cleaned manifest into the storage
 	// for safety we double check, the same apply for HasSynced
 	if storedManifest, ok := h.storage.Get(getObjID(input)); ok && input.Evt.HasSynced {
 		diff, err = diffTextLines(storedManifest, cleanedManifest)
 		if err != nil {
-			return stopHandlerWithError(input, errors.Wrap(err, "diffTextLines"))
+			return h.error(errors.Wrap(err, "diffTextLines"))
 		}
 		// If there is differences we allow for the next handler to run
 		// typically a notifier such as slack
@@ -185,6 +112,16 @@ func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Out
 	ctx = nil
 
 	switch input.Evt.Kind {
+	case "Add", "Update":
+		// Clean only for Add and Update since Delete has no manifest and would fail
+		cleanedManifest, err := cleanK8sManifest(input.K8sManifest, h.annotationsToClean)
+		if err != nil {
+			return h.error(err)
+		}
+		input.K8sManifest = cleanedManifest
+	}
+
+	switch input.Evt.Kind {
 	case "Add":
 		return h.runAdd(ctx, input)
 	case "Update":
@@ -193,7 +130,8 @@ func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Out
 		return h.runDelete(ctx, input)
 	}
 
-	return stopHandlerWithError(input, fmt.Errorf("Unknown event kind %s", input.Evt.Kind))
+	// If none of above events matches return an error
+	return h.error(fmt.Errorf("Unknown event kind %s", input.Evt.Kind))
 }
 
 func createTempFile(content []byte) (string, error) {
