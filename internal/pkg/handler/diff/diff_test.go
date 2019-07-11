@@ -80,12 +80,12 @@ func TestDiffHandler(t *testing.T) {
 		t.Error("There should be no diff because is a new event")
 	}
 
-	if output.RunNext != false {
-		t.Error("nextRun should be false because there is no difference")
+	if output.RunNext != true {
+		t.Error("nextRun should be true because this is an Add event")
 	}
 
 	if err != nil {
-		t.Error("No error should have ocurred on Diff")
+		t.Error("No error should have ocurred")
 	}
 
 	if hook.LastEntry() != nil {
@@ -141,8 +141,8 @@ func TestDiffHandler(t *testing.T) {
 		t.Error("There should be no difference")
 	}
 
-	if output.RunNext != false {
-		t.Error("nextRun should be false because there is no difference")
+	if output.RunNext != true {
+		t.Error("nextRun should be true because deletes are notified")
 	}
 
 	if err != nil {

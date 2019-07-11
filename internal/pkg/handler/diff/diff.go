@@ -97,6 +97,85 @@ func cleanK8sManifest(manifest []byte, annotationsToClean []string) ([]byte, err
 	return _json, nil
 }
 
+func stopHandlerWithError(input handler.Input, err error) (handler.Output, error) {
+	return handler.Output{
+		K8sManifest: input.K8sManifest,
+		Payload:     input.Payload,
+		RunNext:     false}, err
+}
+
+func getObjID(input handler.Input) string {
+	return fmt.Sprintf("%s/%s", input.Evt.Key, input.ResourceKind)
+}
+
+func (h *diffHandler) runAdd(ctx context.Context, input handler.Input) (handler.Output, error) {
+
+	cleanedManifest, err := cleanK8sManifest(input.K8sManifest, h.annotationsToClean)
+	if err != nil {
+		return stopHandlerWithError(input, err)
+	}
+
+	h.storage.Add(getObjID(input), cleanedManifest)
+
+	runNext := true
+	// Initial scache ync-up events are "Add", we don't want them to be notified
+	// but we want them to fill up our storage for future comparison
+	if !input.Evt.HasSynced {
+		runNext = false
+	}
+
+	return handler.Output{
+		K8sManifest: input.K8sManifest,
+		Payload:     input.Payload,
+		RunNext:     runNext,
+	}, nil
+}
+
+func (h *diffHandler) runUpdate(ctx context.Context, input handler.Input) (handler.Output, error) {
+
+	cleanedManifest, err := cleanK8sManifest(input.K8sManifest, h.annotationsToClean)
+	if err != nil {
+		return stopHandlerWithError(input, err)
+	}
+
+	var diff []byte
+	runNext := false
+
+	// Since this is an update, there should be a cleaned manifest into the storage
+	// for safety we double check, the same apply for HasSynced
+	if storedManifest, ok := h.storage.Get(getObjID(input)); ok && input.Evt.HasSynced {
+		diff, err = diffTextLines(storedManifest, cleanedManifest)
+		if err != nil {
+			return stopHandlerWithError(input, errors.Wrap(err, "diffTextLines"))
+		}
+		// If there is differences we allow for the next handler to run
+		// typically a notifier such as slack
+		if len(diff) > 0 {
+			runNext = true
+		}
+	}
+
+	// Adding to the storage only after comparison
+	h.storage.Add(getObjID(input), cleanedManifest)
+
+	return handler.Output{
+		K8sManifest: cleanedManifest,
+		Payload:     diff,
+		RunNext:     runNext,
+	}, nil
+}
+
+// runDelete deletes the object from storage and keep moving forward in the chain
+func (h *diffHandler) runDelete(ctx context.Context, input handler.Input) (handler.Output, error) {
+
+	h.storage.Delete(getObjID(input))
+	return handler.Output{
+		K8sManifest: input.K8sManifest,
+		Payload:     input.Payload,
+		RunNext:     true,
+	}, nil
+}
+
 // Run spits out the differentce between previous versions of K8sManifest
 // this function is normally the base function handler for resource watchers
 // because filters noise by cleaning metadata consolidating logical changes
@@ -104,51 +183,17 @@ func cleanK8sManifest(manifest []byte, annotationsToClean []string) ([]byte, err
 // returned in the payload, next handler is run only if a difference is found
 func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
 	ctx = nil
-	objId := fmt.Sprintf("%s/%s", input.Evt.Key, input.ResourceKind)
 
-	if input.Evt.Kind == "Delete" {
-		h.storage.Delete(objId)
-
-		return handler.Output{
-			K8sManifest: input.K8sManifest,
-			Payload:     input.Payload,
-			RunNext:     false, // Delete events won't be handled from now on
-		}, nil
+	switch input.Evt.Kind {
+	case "Add":
+		return h.runAdd(ctx, input)
+	case "Update":
+		return h.runUpdate(ctx, input)
+	case "Delete":
+		return h.runDelete(ctx, input)
 	}
 
-	// Only diff if event is Update
-	cleanedManifest, err := cleanK8sManifest(input.K8sManifest, h.annotationsToClean)
-	if err != nil {
-		return handler.Output{
-			K8sManifest: input.K8sManifest,
-			Payload:     input.Payload,
-			RunNext:     false}, err
-	}
-
-	var diff []byte
-	nextRun := false
-
-	if storedManifest, ok := h.storage.Get(objId); ok && input.Evt.HasSynced {
-		diff, err = diffTextLines(storedManifest, cleanedManifest)
-		if err != nil {
-			return handler.Output{
-				K8sManifest: input.K8sManifest,
-				Payload:     input.Payload,
-				RunNext:     false}, errors.Wrap(err, "diffTextLines")
-		}
-		// If there is differences we allow for the next handler to run
-		// typically a notifier such as slack
-		if len(diff) > 0 {
-			nextRun = true
-		}
-	}
-
-	h.storage.Add(objId, cleanedManifest)
-	return handler.Output{
-		K8sManifest: cleanedManifest,
-		Payload:     diff,
-		RunNext:     nextRun,
-	}, nil
+	return stopHandlerWithError(input, fmt.Errorf("Unknown event kind %s", input.Evt.Kind))
 }
 
 func createTempFile(content []byte) (string, error) {
