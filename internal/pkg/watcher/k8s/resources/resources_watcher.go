@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"time"
 
+	"github.com/snebel29/kooper/monitoring/metrics"
 	"github.com/snebel29/kooper/operator/controller"
 	"github.com/snebel29/kooper/operator/handler"
 	"github.com/snebel29/kooper/operator/retrieve"
@@ -34,7 +35,7 @@ func (r *K8sResourceWatcher) Shutdown() {
 
 func newK8sResourceWatcher(kind string, hand *handler.HandlerFunc, retr *retrieve.Resource) watcher.ResourceWatcher {
 	// Create the controller that will refresh every 30 seconds.
-	ctrl := newK8sController(hand, retr)
+	ctrl := newK8sController(kind, hand, retr)
 	stopC := make(chan struct{})
 
 	return &K8sResourceWatcher{
@@ -44,8 +45,11 @@ func newK8sResourceWatcher(kind string, hand *handler.HandlerFunc, retr *retriev
 	}
 }
 
-func newK8sController(hand *handler.HandlerFunc, retr *retrieve.Resource) controller.Controller {
-	refresh := 30 * time.Second
-	logger := log.New()
-	return controller.NewSequential(refresh, hand, retr, nil, logger)
+func newK8sController(name string, hand *handler.HandlerFunc, retr *retrieve.Resource) controller.Controller {
+	cfg := &controller.Config{
+		Name:              name,
+		ConcurrentWorkers: 1,
+		ResyncInterval:    30 * time.Second,
+	}
+	return controller.New(cfg, hand, retr, nil, nil, metrics.Dummy, log.StandardLogger())
 }
