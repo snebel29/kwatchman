@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
-	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -48,7 +48,7 @@ type diffHandler struct {
 
 func NewDiffHandler(c config.Handler) handler.Handler {
 	return &diffHandler{
-		config:  c,
+		config: c,
 		annotationsToClean: []string{
 			"deployment.kubernetes.io/revision",
 			"kubectl.kubernetes.io/last-applied-configuration",
@@ -103,7 +103,6 @@ func cleanK8sManifest(manifest []byte, annotationsToClean []string) ([]byte, err
 // from the user perspective, output returns the cleaned manifest and the diff is
 // returned in the payload, next handler is run only if a difference is found
 func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
-	//TODO: Should cleaning manifest be extracted from DiffFunc into its own Handler?
 	ctx = nil
 	objId := fmt.Sprintf("%s/%s", input.Evt.Key, input.ResourceKind)
 
@@ -167,7 +166,8 @@ func createTempFile(content []byte) (string, error) {
 }
 
 func diffTextLines(text1, text2 []byte) ([]byte, error) {
-	// TODO: This function is coupled with POSIX diff command
+	// This function is currently coupled with POSIX diff command
+	// which is a mandatory requirement
 	file1, err := createTempFile(text1)
 	if err != nil {
 		return nil, err
