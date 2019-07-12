@@ -9,9 +9,10 @@ import (
 
 type Handlers []Handler
 type Handler struct {
-	Name        string
-	ClusterName string
-	WebhookURL  string
+	Name         string
+	ClusterName  string
+	WebhookURL   string
+	IgnoreEvents []string
 }
 
 type Resources []Resource

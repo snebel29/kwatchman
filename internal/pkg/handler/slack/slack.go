@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
-	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"strconv"
 	"strings"
 	"time"
@@ -49,12 +49,25 @@ func NewSlackHandler(c config.Handler) handler.Handler {
 			"Add":    "#1ADA00",
 			"Update": "#F39C12",
 			"Delete": "#FF0000",
-			"Info":   "#0000FF",
 		},
 	}
 }
 
+func (h *slackHandler) noErrorNoRunNext() (handler.Output, error) {
+	return handler.Output{RunNext: false}, nil
+}
+
 func (h *slackHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
+	// Process its ignoreEvents policy
+	for _, event := range h.config.IgnoreEvents {
+		if input.Evt.Kind == event {
+			return h.noErrorNoRunNext()
+		}
+	}
+	return h.run(ctx, input)
+}
+
+func (h *slackHandler) run(ctx context.Context, input handler.Input) (handler.Output, error) {
 	title := fmt.Sprintf("%s %s\n%s", strings.ToUpper(input.Evt.Kind), input.ResourceKind, input.Evt.Key)
 
 	// From Aug-2018 Slack requires text field to be under 4000 characters
