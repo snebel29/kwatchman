@@ -37,14 +37,14 @@ The format is pretty simple, with two main sections to configure resources and h
 
 Define the kubernetes resources to watch, not all resources are available to watch although they are continuosly added, create an [issue](https://github.com/snebel29/kwatchman/issues) or contribute yourself to get more resources added
 
-> :info: Resources should handle apiGroup deprecation and removal transparently for the user while using last stable kwatchman versions
+> :information_source: Resources should handle apiGroup deprecation and removal transparently for the user while using last stable kwatchman versions
 
 #### Handlers
 Handlers is what makes kwatchman powerfull, takes as input all the related event information (action, k8s manifest, etc..) and execute some code using it, they can be used for notifiying to instant message services such as Slack or to simply log the events into your logging system, handlers can be chained passing the responsability to keep the execution to the next handler.
 
 Currently only a hand of handlers can be used, but there is plans to allow to building your own through plugins, webhooks and local executor, match the interface, keep code with reasonable quality and consistency and you can as well pull request for adding useful general purpose handlers.
 
-> :info: Upon a handler error, the whole chain is automatically retried up to 3 times
+> :information_source: Upon a handler error, the whole chain is automatically retried up to 3 times
 
 ###### The diff handler
 This is the most powerful handler, and should be for almost all use cases the base handler as it filters noisy events reporting only the changes to manifests.
