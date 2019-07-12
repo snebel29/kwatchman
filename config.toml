@@ -1,9 +1,6 @@
 # K8s resources to watch
 [[resource]]
 kind = "deployment"
-policies = [
-  "cleanReplicasIfPodAutoscaling" #This policy is not implemented yet
-]
 
 [[resource]]
 kind = "service"
@@ -29,3 +26,5 @@ name = "log"
 name        = "slack"
 clusterName = "myClusterName"
 webhookURL  = "https://slack-webhook-url"
+
+# ignoreEvents = ["Add", "Update", "Delete"]
