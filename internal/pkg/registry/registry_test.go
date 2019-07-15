@@ -27,5 +27,4 @@ func TestRegistry(t *testing.T) {
 		t.Errorf("handlerList length should be %d but got %d instead", expected, len(handlerList))
 	}
 
-	
 }

@@ -85,7 +85,7 @@ func GetHandlerListFromConfig(c *config.Config) ([]Handler, error) {
 				return nil, errors.Errorf(
 					"handler %s is not of type func() Handler but %T instead", configHandler.Name, rh)
 			}
-			handlerList = append(handlerList, regHandler(configHandler))	
+			handlerList = append(handlerList, regHandler(configHandler))
 		}
 	}
 	return handlerList, nil

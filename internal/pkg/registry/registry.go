@@ -1,20 +1,21 @@
 package registry
 
 import (
-	"sync"
 	log "github.com/sirupsen/logrus"
+	"sync"
 )
 
 // Predefined registry identifiers
 const (
 	HANDLER   = "handler"
-	RESOURCES = "resources" 
+	RESOURCES = "resources"
 )
 
 // ItemsRegistry holds a map of objects
 type ItemsRegistry map[string]interface{}
+
 var (
-	lock = &sync.Mutex{}
+	lock           = &sync.Mutex{}
 	globalRegistry = map[string]ItemsRegistry{}
 )
 

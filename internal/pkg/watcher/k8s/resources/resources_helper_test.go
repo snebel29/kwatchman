@@ -1,18 +1,18 @@
 package resources
 
 import (
+	"fmt"
 	"github.com/snebel29/kooper/operator/common"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
-	"github.com/snebel29/kwatchman/internal/pkg/config"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"reflect"
-	"testing"
-	"runtime"
-	"path"
 	"os"
-	"fmt"
+	"path"
+	"reflect"
+	"runtime"
+	"testing"
 )
 
 var thisFilename string
@@ -130,7 +130,7 @@ func TestGetResourceFuncListFromConfig(t *testing.T) {
 		"kwatchman",
 		fmt.Sprintf("--config=%s", configFile),
 	}
-	
+
 	conf, err := config.NewConfig()
 	if err != nil {
 		t.Error("The config should have been parsed without errors")
@@ -155,11 +155,11 @@ func TestGetResourceWatcherList(t *testing.T) {
 	}
 	rwl := GetResourceWatcherList(
 		resourcesFuncList,
-			ResourceWatcherArgs{
-				Clientset: nil,
-				Namespace: "",
-				ChainOfHandlers: nil,
-	})
+		ResourceWatcherArgs{
+			Clientset:       nil,
+			Namespace:       "",
+			ChainOfHandlers: nil,
+		})
 	expected := 5
 	if len(rwl) != expected {
 		t.Errorf("resource watcher list should have %d resource, have %d instead", expected, len(rwl))

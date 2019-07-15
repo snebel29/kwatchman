@@ -1,11 +1,11 @@
 package resources
 
 import (
-	"testing"
 	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
-	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"github.com/snebel29/kwatchman/internal/pkg/handler/log"
+	"github.com/snebel29/kwatchman/internal/pkg/watcher"
+	"testing"
 )
 
 func k8sIndividualResourceWatcherHelper(w watcher.ResourceWatcher, t *testing.T) {
@@ -22,7 +22,6 @@ func k8sIndividualResourceWatcherHelper(w watcher.ResourceWatcher, t *testing.T)
 	}
 }
 
-
 func TestNewResourceWatcher(t *testing.T) {
 
 	resourcesFactoryToTest := []func(ResourceWatcherArgs) watcher.ResourceWatcher{
@@ -35,8 +34,8 @@ func TestNewResourceWatcher(t *testing.T) {
 
 	chainOfHandlers := handler.NewChainOfHandlers(log.NewLogHandler(config.Handler{}))
 	rwa := ResourceWatcherArgs{
-		Clientset: nil,
-		Namespace: "",
+		Clientset:       nil,
+		Namespace:       "",
 		ChainOfHandlers: chainOfHandlers,
 	}
 

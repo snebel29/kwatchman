@@ -3,14 +3,14 @@ package log
 import (
 	"context"
 	log "github.com/sirupsen/logrus"
-	"github.com/snebel29/kwatchman/internal/pkg/registry"
-	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/config"
+	"github.com/snebel29/kwatchman/internal/pkg/handler"
+	"github.com/snebel29/kwatchman/internal/pkg/registry"
 )
 
 //TODO: Fix returning errors within handlers functions cause kwatch to panic!!!
 
-type logHandler struct{
+type logHandler struct {
 	config config.Handler
 }
 

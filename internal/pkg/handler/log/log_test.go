@@ -1,9 +1,9 @@
 package log
 
 import (
-	"github.com/snebel29/kwatchman/internal/pkg/config"
 	log_test "github.com/sirupsen/logrus/hooks/test"
 	"github.com/snebel29/kooper/operator/common"
+	"github.com/snebel29/kwatchman/internal/pkg/config"
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"reflect"
 	"testing"
