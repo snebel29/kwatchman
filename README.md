@@ -6,9 +6,7 @@ For example, whenever the container image tag version of a deployment changes yo
 
 You can check the project roadmap within its [kwatchman repository project](https://github.com/snebel29/kwatchman/projects/1)
 
-> :warning: The production go code is still in beta version
-
-<INSERT ANIMATED GIFT HERE>
+  ![](img/demo.gif)
 
 ## Install
 
