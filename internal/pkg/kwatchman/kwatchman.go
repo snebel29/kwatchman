@@ -10,6 +10,8 @@ import (
 
 var shutdown chan os.Signal
 
+// Start runs the watcher while listening for termination signals
+// to do a graceful shutdown
 func Start(w watcher.Watcher) error {
 	shutdown = make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)

@@ -8,8 +8,6 @@ import (
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
 )
 
-//TODO: Fix returning errors within handlers functions cause kwatch to panic!!!
-
 type logHandler struct {
 	config config.Handler
 }
@@ -24,7 +22,8 @@ func NewLogHandler(c config.Handler) handler.Handler {
 	}
 }
 
-// log Run can be used for debugging, troubleshooting and testing
+// log handler logs the event, and can be used for testing, and troubleshooting
+// by enriching your event logs with k8s events
 func (h *logHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
 	manifestToPrint := input.K8sManifest
 	_json, err := handler.PrettyPrintJSON(input.K8sManifest)

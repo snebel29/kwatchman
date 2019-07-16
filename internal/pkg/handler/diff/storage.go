@@ -7,6 +7,8 @@ type storage struct {
 	repository map[string][]byte
 }
 
+// Return a new storage object, every diff handler should have its own
+// so singleton pattern was finally not necessary
 func newStorage() *storage {
 	r := make(map[string][]byte)
 	return &storage{

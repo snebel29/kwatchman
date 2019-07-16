@@ -23,6 +23,8 @@ type diffHandler struct {
 	storage            *storage
 }
 
+// NewDiffHandler return a diff handler and defines the default
+// annotations that has to be cleaned to avoid noise due to them chaning on every single event
 func NewDiffHandler(c config.Handler) handler.Handler {
 	return &diffHandler{
 		config: c,
@@ -38,10 +40,13 @@ func getObjID(input handler.Input) string {
 	return fmt.Sprintf("%s/%s", input.Evt.Key, input.ResourceKind)
 }
 
+// Helper error function to return a handler error
+// runNext value will be false as this is the zero value for bool
 func (h *diffHandler) error(err error) (handler.Output, error) {
 	return handler.Output{}, err
 }
 
+// runAdd runs the handler when the event is Add
 func (h *diffHandler) runAdd(ctx context.Context, input handler.Input) (handler.Output, error) {
 
 	cleanedManifest := input.K8sManifest
@@ -61,6 +66,7 @@ func (h *diffHandler) runAdd(ctx context.Context, input handler.Input) (handler.
 	}, nil
 }
 
+// runUpdate runs the handler when the event is Update
 func (h *diffHandler) runUpdate(ctx context.Context, input handler.Input) (handler.Output, error) {
 
 	var diff []byte
@@ -150,7 +156,8 @@ func createTempFile(content []byte) (string, error) {
 
 func diffTextLines(text1, text2 []byte) ([]byte, error) {
 	// This function is currently coupled with POSIX diff command
-	// which is a mandatory requirement
+	// which is for now a mandatory requirement, in the future we will be able
+	// to configure our own, and eventually make semantic diff using pure go code
 	file1, err := createTempFile(text1)
 	if err != nil {
 		return nil, err

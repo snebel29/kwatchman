@@ -33,7 +33,7 @@ type ChainOfHandlers interface {
 	Run(context.Context, Input) error
 }
 
-// chainOfHandlers holds a list of ResourcesHandlerFunc that can be exexcute sequencially
+// chainOfHandlers holds a list of ResourcesHandlerFunc that can be executed sequencially
 type chainOfHandlers struct {
 	handlers []Handler
 }

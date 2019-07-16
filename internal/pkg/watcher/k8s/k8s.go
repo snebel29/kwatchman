@@ -7,13 +7,16 @@ import (
 	"github.com/snebel29/kwatchman/internal/pkg/handler"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 	"github.com/snebel29/kwatchman/internal/pkg/watcher/k8s/resources"
-	"k8s.io/client-go/kubernetes"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"sync"
 
-	//Register handlers to be available for configuration
+	// We need to register cloud auth providers
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+
+	//Register the following handlers to be available for configuration
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/diff"
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/log"
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/slack"
@@ -24,6 +27,8 @@ type K8sWatcher struct {
 	k8sResources []watcher.ResourceWatcher
 }
 
+// NewK8sWatcher parses the config and maps handlers and
+// resources from configuration, then return the k8sWatcher
 func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
 	clientset, err := getK8sClient(c.CLI.Kubeconfig)
 	if err != nil {
