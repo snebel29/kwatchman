@@ -22,14 +22,14 @@ import (
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/slack"
 )
 
-type K8sWatcher struct {
+type Watcher struct {
 	config       *config.Config
 	k8sResources []watcher.ResourceWatcher
 }
 
 // NewK8sWatcher parses the config and maps handlers and
 // resources from configuration, then return the k8sWatcher
-func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
+func NewK8sWatcher(c *config.Config) (*Watcher, error) {
 	clientset, err := getK8sClient(c.CLI.Kubeconfig)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
 		return nil, err
 	}
 
-	return &K8sWatcher{
+	return &Watcher{
 		config: c,
 		k8sResources: resources.GetResourceWatcherList(
 			resourcesFuncList,
@@ -61,7 +61,7 @@ func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
 }
 
 // Run start k8s controller for each k8s resource
-func (w *K8sWatcher) Run() error {
+func (w *Watcher) Run() error {
 	// Mo matter what, either an error or a legitime shutdown returning nil,
 	// at the end we shutdown the watcher with all its ResourceWatchers
 	defer w.Shutdown()
@@ -94,7 +94,7 @@ func (w *K8sWatcher) Run() error {
 	return <-errC
 }
 
-func (w *K8sWatcher) Shutdown() {
+func (w *Watcher) Shutdown() {
 	for _, rw := range w.k8sResources {
 		rw.Shutdown()
 	}
