@@ -28,7 +28,7 @@ type Resource struct {
 type Config struct {
 	Handlers  Handlers  `mapstructure:"handler"`
 	Resources Resources `mapstructure:"resource"`
-	CLI       *cli.CLIArgs
+	CLI       *cli.Args
 }
 
 func readConfigFile(configFile string) error {

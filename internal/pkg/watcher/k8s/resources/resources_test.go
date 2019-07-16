@@ -36,6 +36,7 @@ func TestNewResourceWatcher(t *testing.T) {
 	rwa := ResourceWatcherArgs{
 		Clientset:       nil,
 		Namespace:       "",
+		LabelSelector:   "",
 		ChainOfHandlers: chainOfHandlers,
 	}
 

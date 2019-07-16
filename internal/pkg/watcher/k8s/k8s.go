@@ -54,6 +54,7 @@ func NewK8sWatcher(c *config.Config) (*K8sWatcher, error) {
 			resources.ResourceWatcherArgs{
 				Clientset:       clientset,
 				Namespace:       c.CLI.Namespace,
+				LabelSelector:   c.CLI.LabelSelector,
 				ChainOfHandlers: chainOfHandlers,
 			}),
 	}, nil
@@ -103,14 +104,14 @@ func (w *K8sWatcher) Shutdown() {
 // is run, InCluster vs local, kubeconfig will be used only when running out of k8s
 // you can pass an empty string when running InCluster
 func getK8sClient(kubeconfigFile string) (kubernetes.Interface, error) {
-	var config *rest.Config
-	config, err := rest.InClusterConfig()
+	var conf *rest.Config
+	conf, err := rest.InClusterConfig()
 
 	// If InClusterConfig() fails
 	if err != nil {
 		// If ErrNotInCluster then we try to get client from kubeconfig
 		if err == rest.ErrNotInCluster {
-			config, err = clientcmd.BuildConfigFromFlags("", kubeconfigFile)
+			conf, err = clientcmd.BuildConfigFromFlags("", kubeconfigFile)
 			if err != nil {
 				return nil, err
 			}
@@ -122,7 +123,7 @@ func getK8sClient(kubeconfigFile string) (kubernetes.Interface, error) {
 	}
 
 	// Generate new clientset from the config (either produced In or Out cluster)
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := kubernetes.NewForConfig(conf)
 	if err != nil {
 		return nil, fmt.Errorf("can't create kubernetes client: %s", err)
 	}
