@@ -26,8 +26,7 @@ type Resources []Resource
 
 // Resource holds the individual resource configurations
 type Resource struct {
-	Kind     string
-	Policies []string
+	Kind string
 }
 
 // Config represent the config file

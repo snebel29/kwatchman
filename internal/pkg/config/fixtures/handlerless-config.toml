@@ -1,6 +1,3 @@
 # K8s resources to watch
 [[resource]]
 kind = "deployment"
-policies = [
-  "cleanReplicasIfPodAutoscaling"
-]

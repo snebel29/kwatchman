@@ -1,9 +1,6 @@
 # K8s resources to watch
 [[resource]]
 kind = "deployment"
-policies = [
-  "cleanReplicasIfPodAutoscaling"
-]
 
 # Handlers will be trigger in this specific order
 # Diff handler should typically be the first handler to trigger

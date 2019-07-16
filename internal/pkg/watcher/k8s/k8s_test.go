@@ -53,7 +53,7 @@ func TestNewK8sWatcher(t *testing.T) {
 	handlerToRegister := "log"
 	h := config.Handlers{{Name: handlerToRegister}}
 	r := config.Resources{
-		{Kind: "deployment", Policies: []string{}},
+		{Kind: "deployment"},
 	}
 	c := &cli.Args{
 		Namespace:  "namespace",
