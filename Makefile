@@ -10,6 +10,9 @@ COVERAGE_FILE=/tmp/coverage.out
 LD_FLAGS="-X ${REPOSITORY}/internal/pkg/cli.Version=$(VERSION) -w -extldflags -static"
 
 
+report-race-conditions:
+	go build -race cmd/*.go
+
 build: deps
 	CGO_ENABLED=0 go build -ldflags $(LD_FLAGS) cmd/*.go
 
