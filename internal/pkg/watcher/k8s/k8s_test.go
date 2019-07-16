@@ -55,7 +55,7 @@ func TestNewK8sWatcher(t *testing.T) {
 	r := config.Resources{
 		{Kind: "deployment", Policies: []string{}},
 	}
-	c := &cli.CLIArgs{
+	c := &cli.Args{
 		Namespace:  "namespace",
 		Kubeconfig: kubeconfig,
 		ConfigFile: "",

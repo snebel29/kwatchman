@@ -30,9 +30,11 @@ func NewDaemonsetWatcher(arg ResourceWatcherArgs) watcher.ResourceWatcher {
 		Object: &appsv1.DaemonSet{},
 		ListerWatcher: &cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				options.LabelSelector = arg.LabelSelector
 				return arg.Clientset.AppsV1().DaemonSets(arg.Namespace).List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				options.LabelSelector = arg.LabelSelector
 				return arg.Clientset.AppsV1().DaemonSets(arg.Namespace).Watch(options)
 			},
 		},

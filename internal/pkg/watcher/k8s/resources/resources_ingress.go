@@ -34,9 +34,11 @@ func NewIngressWatcher(arg ResourceWatcherArgs) watcher.ResourceWatcher {
 		Object: &extensions_v1beta1.Ingress{},
 		ListerWatcher: &cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				options.LabelSelector = arg.LabelSelector
 				return arg.Clientset.ExtensionsV1beta1().Ingresses(arg.Namespace).List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				options.LabelSelector = arg.LabelSelector
 				return arg.Clientset.ExtensionsV1beta1().Ingresses(arg.Namespace).Watch(options)
 			},
 		},

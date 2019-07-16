@@ -158,6 +158,7 @@ func TestGetResourceWatcherList(t *testing.T) {
 		ResourceWatcherArgs{
 			Clientset:       nil,
 			Namespace:       "",
+			LabelSelector:   "",
 			ChainOfHandlers: nil,
 		})
 	expected := 5

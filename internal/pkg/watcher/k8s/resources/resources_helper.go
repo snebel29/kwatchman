@@ -23,6 +23,7 @@ import (
 type ResourceWatcherArgs struct {
 	Clientset       kubernetes.Interface
 	Namespace       string
+	LabelSelector   string
 	ChainOfHandlers handler.ChainOfHandlers
 }
 

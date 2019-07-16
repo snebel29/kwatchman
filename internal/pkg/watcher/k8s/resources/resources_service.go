@@ -30,9 +30,11 @@ func NewServiceWatcher(arg ResourceWatcherArgs) watcher.ResourceWatcher {
 		Object: &corev1.Service{},
 		ListerWatcher: &cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				options.LabelSelector = arg.LabelSelector
 				return arg.Clientset.CoreV1().Services(arg.Namespace).List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				options.LabelSelector = arg.LabelSelector
 				return arg.Clientset.CoreV1().Services(arg.Namespace).Watch(options)
 			},
 		},
