@@ -10,6 +10,7 @@ import (
 	"github.com/snebel29/kwatchman/internal/pkg/registry"
 )
 
+// Handler interface
 type Handler interface {
 	Run(context.Context, Input) (Output, error)
 }
@@ -22,13 +23,14 @@ type Input struct {
 	Payload      []byte //This is a free field that can hold, anything such as text, images, etc
 }
 
-// Ouput holds the output data from any handler execution
+// Output holds the output data from any handler execution
 type Output struct {
 	K8sManifest []byte
 	Payload     []byte //This is a free field that can hold, anything such as text, images, etc
 	RunNext     bool
 }
 
+// ChainOfHandlers Interface
 type ChainOfHandlers interface {
 	Run(context.Context, Input) error
 }
@@ -63,6 +65,7 @@ func (c *chainOfHandlers) Run(ctx context.Context, input Input) error {
 	return nil
 }
 
+// NewChainOfHandlers return a ChainOfHandlers
 func NewChainOfHandlers(handlers ...Handler) ChainOfHandlers {
 	return &chainOfHandlers{
 		handlers: handlers,
@@ -91,6 +94,7 @@ func GetHandlerListFromConfig(c *config.Config) ([]Handler, error) {
 	return handlerList, nil
 }
 
+// PrettyPrintJSON return an indented JSON
 func PrettyPrintJSON(_json []byte) ([]byte, error) {
 	var indented bytes.Buffer
 	if err := json.Indent(&indented, _json, "", " "); err != nil {

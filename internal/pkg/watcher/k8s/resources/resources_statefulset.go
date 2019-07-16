@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	// STATEFULSET const used by registration process
 	STATEFULSET = "statefulset"
 )
 

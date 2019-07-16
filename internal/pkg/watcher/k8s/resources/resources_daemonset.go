@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	// DAEMONSET const used by registration process
 	DAEMONSET = "daemonset"
 )
 

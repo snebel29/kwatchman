@@ -6,6 +6,7 @@ import (
 	"github.com/snebel29/kooper/operator/common"
 )
 
+// MockHandler call registry
 type MockHandler struct {
 	Called             bool
 	PassedPayload      []byte
@@ -15,6 +16,7 @@ type MockHandler struct {
 	PassedContext      context.Context
 }
 
+// Run the mock
 func (h *MockHandler) Run(ctx context.Context, input Input) (Output, error) {
 	h.Called = true
 	h.PassedPayload = input.Payload
@@ -29,6 +31,7 @@ func (h *MockHandler) Run(ctx context.Context, input Input) (Output, error) {
 		RunNext:     true}, nil
 }
 
+// MockHandlerError call registry
 type MockHandlerError struct {
 	Called             bool
 	PassedPayload      []byte
@@ -38,6 +41,7 @@ type MockHandlerError struct {
 	PassedContext      context.Context
 }
 
+// Run the mock
 func (h *MockHandlerError) Run(ctx context.Context, input Input) (Output, error) {
 	return Output{
 		K8sManifest: input.K8sManifest,
@@ -45,10 +49,12 @@ func (h *MockHandlerError) Run(ctx context.Context, input Input) (Output, error)
 		RunNext:     false}, fmt.Errorf("dummy error")
 }
 
+// NewMockHandler return a mock
 func NewMockHandler() *MockHandler {
 	return &MockHandler{Called: false}
 }
 
+// NewMockHandlerError return a mock that return error
 func NewMockHandlerError() *MockHandlerError {
 	return &MockHandlerError{Called: false}
 }

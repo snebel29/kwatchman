@@ -22,6 +22,7 @@ import (
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/slack"
 )
 
+// Watcher object that also hold config and k8s resources to generate resources watchers from
 type Watcher struct {
 	config       *config.Config
 	k8sResources []watcher.ResourceWatcher
@@ -94,6 +95,7 @@ func (w *Watcher) Run() error {
 	return <-errC
 }
 
+// Shutdown the k8s watcher and all its resource watchers
 func (w *Watcher) Shutdown() {
 	for _, rw := range w.k8sResources {
 		rw.Shutdown()

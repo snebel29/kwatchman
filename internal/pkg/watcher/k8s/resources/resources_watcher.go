@@ -12,12 +12,14 @@ import (
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 )
 
+// K8sResourceWatcher represent the resourceWatcher
 type K8sResourceWatcher struct {
 	kind  string
 	stopC chan struct{}
 	ctrl  controller.Controller
 }
 
+// Run the resource watcher
 func (r *K8sResourceWatcher) Run() error {
 	log.Printf("Run K8sResourceWatcher with kind %v\n", r.kind)
 
@@ -28,10 +30,11 @@ func (r *K8sResourceWatcher) Run() error {
 	return nil
 }
 
+// Shutdown the resource watcher
 func (r *K8sResourceWatcher) Shutdown() {
 	// FIXME: Shutdown is not really stopping the kooper controller, althought upstream
 	// the stop signal is trigerring a general shutdown followed by exit, this may change in the future!!
-	log.Printf("Shutdown signal received for K8sResourceWatcher with kind %v, the controller is not being explicitly stopped but the whole kwatchman exits upstream\n", r.kind)
+	log.Printf("Shutdown signal received for K8sResourceWatcher with kind %v, the controller is not being explicitly stopped, althought the whole kwatchman exits upstream so this is not a big deal\n", r.kind)
 	r.stopC <- struct{}{}
 }
 

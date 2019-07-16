@@ -16,6 +16,7 @@ func init() {
 	registry.Register(registry.HANDLER, "log", NewLogHandler)
 }
 
+// NewLogHandler return a log handler
 func NewLogHandler(c config.Handler) handler.Handler {
 	return &logHandler{
 		config: c,

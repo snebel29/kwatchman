@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	// DEPLOYMENT const used by registration process
 	DEPLOYMENT = "deployment"
 )
 

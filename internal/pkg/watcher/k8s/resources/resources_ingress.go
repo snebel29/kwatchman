@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	// INGRESS const used by registration process
 	INGRESS = "ingress"
 )
 

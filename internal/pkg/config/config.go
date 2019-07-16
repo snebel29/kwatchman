@@ -7,11 +7,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Handlers holds a list of Handler
+type Handlers []Handler
+
 // Handler struct holds configuration fields for all handlers in this code base,
 // non configured options will be set to its zero value in the struct filed, is the responsability
 // of the handler to validate them, as well as to avoid naming conflicts, in the future namespacing
 // might me implemented
-type Handlers []Handler
 type Handler struct {
 	Name         string   // Used by all handlers
 	ClusterName  string   // Used by slack handler
@@ -19,12 +21,16 @@ type Handler struct {
 	IgnoreEvents []string // Used by slack handler
 }
 
+// Resources holds a list of Resource
 type Resources []Resource
+
+// Resource holds the individual resource configurations
 type Resource struct {
 	Kind     string
 	Policies []string
 }
 
+// Config represent the config file
 type Config struct {
 	Handlers  Handlers  `mapstructure:"handler"`
 	Resources Resources `mapstructure:"resource"`
@@ -40,6 +46,7 @@ func readConfigFile(configFile string) error {
 	return nil
 }
 
+// NewConfig return kwatchman config file unmarshalled using viper
 func NewConfig() (*Config, error) {
 	var err error
 	c := cli.NewCLI()

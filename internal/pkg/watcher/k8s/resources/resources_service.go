@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	// SERVICE const used by registration process
 	SERVICE = "service"
 )
 

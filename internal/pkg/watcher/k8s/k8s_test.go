@@ -108,7 +108,7 @@ func (w *ResourceWatcherWithErrorMock) Shutdown() {
 }
 
 func TestK8sWatcherRunAndShutdownNormally(t *testing.T) {
-	w := &K8sWatcher{
+	w := &Watcher{
 		config: nil,
 		k8sResources: []watcher.ResourceWatcher{
 			&ResourceWatcherMock{},
@@ -141,7 +141,7 @@ func TestK8sWatcherRunAndShutdownNormally(t *testing.T) {
 }
 
 func TestK8sWatcherRunAndFailWithErrors(t *testing.T) {
-	w := &K8sWatcher{
+	w := &Watcher{
 		config: nil,
 		k8sResources: []watcher.ResourceWatcher{
 			&ResourceWatcherMock{},

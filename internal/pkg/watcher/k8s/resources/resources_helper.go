@@ -20,6 +20,7 @@ import (
 	"github.com/snebel29/kwatchman/internal/pkg/watcher"
 )
 
+// ResourceWatcherArgs hold the arguments passed to instantiate resources watchers
 type ResourceWatcherArgs struct {
 	Clientset       kubernetes.Interface
 	Namespace       string
@@ -107,7 +108,7 @@ func newResourceHandlerFunc(ch handler.ChainOfHandlers, resourceKind string) *ko
 	}
 }
 
-// GetResourcesListFromConfig return list of resource objects from configuration
+// GetResourcesFuncListFromConfig return list of resource objects from configuration
 func GetResourcesFuncListFromConfig(c *config.Config) ([]func(ResourceWatcherArgs) watcher.ResourceWatcher, error) {
 	var resourceList []func(ResourceWatcherArgs) watcher.ResourceWatcher
 	registeredResources, ok := registry.GetRegistry(registry.RESOURCES)
@@ -128,6 +129,7 @@ func GetResourcesFuncListFromConfig(c *config.Config) ([]func(ResourceWatcherArg
 	return resourceList, nil
 }
 
+// GetResourceWatcherList return the list of configured resources
 func GetResourceWatcherList(
 	resourcesFuncList []func(ResourceWatcherArgs) watcher.ResourceWatcher,
 	args ResourceWatcherArgs) []watcher.ResourceWatcher {
