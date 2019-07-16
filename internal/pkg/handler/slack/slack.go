@@ -31,11 +31,6 @@ func truncateString(text string, limit int) string {
 	return string(runes[:limit])
 }
 
-type cliArgs struct {
-	clusterName string
-	webhookURL  string
-}
-
 type slackHandler struct {
 	config      config.Handler
 	EventColour map[string]string
@@ -57,6 +52,7 @@ func (h *slackHandler) noErrorNoRunNext() (handler.Output, error) {
 	return handler.Output{RunNext: false}, nil
 }
 
+// Slack handler post events into slack using slack webhooks and configured WebhookURL
 func (h *slackHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
 	// Process its ignoreEvents policy
 	for _, event := range h.config.IgnoreEvents {

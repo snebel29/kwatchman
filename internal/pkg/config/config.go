@@ -7,12 +7,16 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Handler struct holds configuration fields for all handlers in this code base,
+// non configured options will be set to its zero value in the struct filed, is the responsability
+// of the handler to validate them, as well as to avoid naming conflicts, in the future namespacing
+// might me implemented
 type Handlers []Handler
 type Handler struct {
-	Name         string
-	ClusterName  string
-	WebhookURL   string
-	IgnoreEvents []string
+	Name         string   // Used by all handlers
+	ClusterName  string   // Used by slack handler
+	WebhookURL   string   // Used by slack handler
+	IgnoreEvents []string // Used by slack handler
 }
 
 type Resources []Resource
