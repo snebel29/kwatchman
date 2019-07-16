@@ -14,7 +14,7 @@ build: deps
 	CGO_ENABLED=0 go build -ldflags $(LD_FLAGS) cmd/*.go
 
 test:
-	go test ./... -cover
+	go test -race ./... -cover
 
 test-coverage-report:
 	go test ./... -coverprofile=$(COVERAGE_FILE)
