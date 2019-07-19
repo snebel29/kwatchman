@@ -18,7 +18,7 @@ type Handler struct {
 	Name         string   // Used by all handlers
 	ClusterName  string   // Used by slack handler
 	WebhookURL   string   // Used by slack handler
-	IgnoreEvents []string // Used by slack handler
+	IgnoreEvents []string // Used by ignoreEvents handler
 }
 
 // Resources holds a list of Resource

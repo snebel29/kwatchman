@@ -48,22 +48,7 @@ func NewSlackHandler(c config.Handler) handler.Handler {
 	}
 }
 
-func (h *slackHandler) noErrorNoRunNext() (handler.Output, error) {
-	return handler.Output{RunNext: false}, nil
-}
-
-// Slack handler post events into slack using slack webhooks and configured WebhookURL
 func (h *slackHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
-	// Process its ignoreEvents policy
-	for _, event := range h.config.IgnoreEvents {
-		if input.Evt.Kind == event {
-			return h.noErrorNoRunNext()
-		}
-	}
-	return h.run(ctx, input)
-}
-
-func (h *slackHandler) run(ctx context.Context, input handler.Input) (handler.Output, error) {
 	title := fmt.Sprintf("%s %s\n%s", strings.ToUpper(input.Evt.Kind), input.ResourceKind, input.Evt.Key)
 
 	// From Aug-2018 Slack requires text field to be under 4000 characters

@@ -81,33 +81,4 @@ func TestMsgToSlack(t *testing.T) {
 	if !reflect.DeepEqual(output.K8sManifest, manifest) {
 		t.Errorf("K8sManifest %s should match %s", string(output.Payload), string(manifest))
 	}
-
-	// Ignore Events should noErrorNoRunNext
-	eventsToIgnore := []string{"Add", "Delete"}
-
-	h = NewSlackHandler(config.Handler{
-		IgnoreEvents: eventsToIgnore,
-		ClusterName:  "myClusterName",
-		WebhookURL:   testServer.URL,
-	})
-
-	output, err = h.Run(nil, handler.Input{
-		Evt:          &common.K8sEvent{Kind: "Add"},
-		ResourceKind: resourceKind,
-		K8sManifest:  manifest,
-		Payload:      payload,
-	})
-
-	if err != nil {
-		t.Errorf("There should have been no error, got %s instead", err.Error())
-	}
-	if output.RunNext != false {
-		t.Error("RunNext should be false")
-	}
-	if len(output.K8sManifest) > 0 {
-		t.Errorf("K8sManifest should be zero value, got %d instead", len(output.K8sManifest))
-	}
-	if len(output.Payload) > 0 {
-		t.Errorf("K8sManifest should be zero value, got %d instead", len(output.Payload))
-	}
 }
