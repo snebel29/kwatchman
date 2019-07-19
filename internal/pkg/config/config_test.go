@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"reflect"
 	"runtime"
 	"testing"
 )
@@ -52,7 +53,18 @@ func TestGoodNewConfigShouldParseCorrectly(t *testing.T) {
 	if len(config.Resources) != 1 {
 		t.Errorf("config.Resources should have 1 item and has %d instead", len(config.Resources))
 	}
-	if len(config.Handlers) != 3 {
-		t.Errorf("config.Resources should have 1 item and has %d instead", len(config.Handlers))
+	if len(config.Handlers) != 4 {
+		t.Errorf("config.Handlers should have 4 item and has %d instead", len(config.Handlers))
 	}
+	found := false
+	for _, h := range config.Handlers {
+		if h.Name == "ignoreEvents" &&
+			reflect.DeepEqual(h.IgnoreEvents, []string{"Add", "Delete"}) {
+				found = true
+		}
+	}
+	if !found {
+		t.Errorf("Events should have been found, got %#v instead", config.Handlers)
+	}
+
 }

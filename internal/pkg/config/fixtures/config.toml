@@ -11,6 +11,10 @@ name = "diff"
 name = "log"
 
 [[handler]]
+name   = "ignoreEvents"
+events = ["Add", "Delete"]
+
+[[handler]]
 name        = "slack"
 clusterName = "myClusterName"
 webhookURL  = "https://slack-webhook-url"
