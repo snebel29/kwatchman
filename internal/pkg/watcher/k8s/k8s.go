@@ -20,6 +20,7 @@ import (
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/diff"
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/log"
 	_ "github.com/snebel29/kwatchman/internal/pkg/handler/slack"
+	_ "github.com/snebel29/kwatchman/internal/pkg/handler/ignoreEvents"
 )
 
 // Watcher object that also hold config and k8s resources to generate resources watchers from
