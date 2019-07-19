@@ -13,7 +13,7 @@ LD_FLAGS="-X ${REPOSITORY}/internal/pkg/cli.Version=$(VERSION) -w -extldflags -s
 report-race-conditions:
 	go build -race cmd/*.go
 
-build: deps
+build:
 	CGO_ENABLED=0 go build -ldflags $(LD_FLAGS) cmd/*.go
 
 test:
