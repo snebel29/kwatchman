@@ -1,20 +1,22 @@
 # Kwatchman
+kwatchman is a tool to watch for k8s resources changes and trigger handlers
 
-Kwatchman is a tool that watch for resources events and manifest changes within kubernetes clusters and triggers chain of handlers with its event information.
+ - kwatchman leverages kubernetes watch and list endpoints to then pipe `Add`, `Update` and `Delete` events through a chain of built-in handlers
+ - kwatchman remove event noise when configuring its diff handler, by filtering events that have no user changes on its manifest.
+ - kwatchman provide manifest and free "payload" field to implement any handler, to do things like
+    - Log events to stdout to enrich logging platform data for troubleshooting
+    - Notify events to IM services such as Slack
+    - Etc.
 
-For example, whenever the container image tag version of a deployment changes you trigger a notification on slack, or you simply log the event into your corporate structured logging platform for future troubleshooting and processing.
-
-You can check the project roadmap within its [kwatchman repository project](https://github.com/snebel29/kwatchman/projects/1)
+## Demo
+Take a look on how would look like the combination of handlers: `diff` -> `log` -> `slack`, whenever there is a manifest change into the cluster kwatchman will compute the difference, will print the event into the standard output to finish by sending a notification to slack.
 
   ![](img/demo.gif)
 
-## Install
+## Installation
+kwatchman can work both internally and externally to the cluster, to work externally all you need as a valid kubeconfig file that kwatchman can leverage to connect although this is handy for development for production use cases you better deploy it within the cluster itself.
 
-Kwatchman is delivered in docker images, which can be found in [snebel29/kwatchman dockerhub](https://hub.docker.com/r/snebel29/kwatchman/tags) but you can also run it from your any computer with a valid kubeconfig file even with special authentication requirements such as cloud managed clusters solutions.
-
-You can create your own kubernetes manifest and deploy althought the usual way of installing kwatchman should be using the kubernetes official package manager [helm](https://helm.sh/) 
-
-### Install using helm chart
+To install kwatchman in the cluster, you can use its helm chart
 
 1. [Install helm](https://helm.sh/docs/using_helm/)
 2. Install the chart, for now this have to be installed from your local file system, but will be published into https://github.com/helm/charts soon
@@ -24,48 +26,83 @@ $ cd kwatchman/build/chart/kwatchman
 $ helm install -n kwatchman .
 ```
 
-### Configuration
+## Configuration
+kwatchman requires a configuration file in order to work, it uses [viper](https://github.com/spf13/viper) under the hood to read the file therefore you can use any of its accepted formats such as (JSON, YAML, TOML, etc.)
 
-Kwatchman uses [viper](https://github.com/spf13/viper) to read from a config file in any of its accepted format, although since all the tests and examples were created using toml, this is the recommended format.
+The structure is pretty simple, a toml example is provided:
 
-The format is pretty simple, with two main sections to configure resources and handlers, detailed information on the configuration can be found in the default [config.toml](./config.toml) file within the root of this repository.
+```toml
+[[resource]]
+kind = "deployment"
+
+[[resource]]
+kind = "service"
+
+[[resource]]
+kind = "statefulset"
+
+[[resource]]
+kind = "daemonset"
+
+[[resource]]
+kind = "ingress"
+
+[[handler]]
+name = "diff"
+
+[[handler]]
+name = "log"
+
+[[handler]]
+name = "ignoreEvents"
+events = ["Add", "Delete"]
+
+[[handler]]
+name        = "slack"
+clusterName = "myClusterName"
+webhookURL  = "https://slack-webhook-url"
+```
+
+## Resources
+Define the list of kubernetes resources to watch, not all resources are available to watch although the intention is to continuosly keep adding them.
+
+> :information_source: You can create an issue or contribute yourself to get more resources added!
+
+> :warning: Resources should handle apiGroup deprecation and removal transparently for the user when using last stable kwatchman versions
 
 
-#### Resources
+## Handlers
+Handlers is what makes kwatchman powerfull and will be trigger in the specific order they are configured.
 
-Define the kubernetes resources to watch, not all resources are available to watch although they are continuosly added, create an [issue](https://github.com/snebel29/kwatchman/issues) or contribute yourself to get more resources added
+A handler takes as input all the related event information (kind of action, k8s manifest, payload, etc.) and execute some code using it, they also decide whether the next handler should run or not, and can pass new extra information through its payload `[]byte` field.
 
-> :information_source: Resources should handle apiGroup deprecation and removal transparently for the user while using last stable kwatchman versions
+Handlers can be created for notifiying to instant message services such as Slack or to simply log the events into your logging system, currently only a hand of handlers are available but there is plans to allow building your own through plugins and generic hanlders such as webhooks and local executor.
 
-#### Handlers
-Handlers is what makes kwatchman powerfull, takes as input all the related event information (action, k8s manifest, etc..) and execute some code using it, they can be used for notifiying to instant message services such as Slack or to simply log the events into your logging system, handlers can be chained passing the responsability to keep the execution to the next handler.
+### The diff handler
+Diff handler clean manifest metadata and perform a diff comparison, the next handler is called only if a difference has been reported, it's typically the first handler to be trigger since this remove noise from events produced by status changes.
 
-Currently only a hand of handlers can be used, but there is plans to allow to building your own through plugins, webhooks and local executor, match the interface, keep code with reasonable quality and consistency and you can as well pull request for adding useful general purpose handlers.
+### The log handler
+This can be used for testing and for recording events at any point in the chain, enriching your logging platform with high level events from kubernetes that could be leveraged for root cause analysis either by humans or machines by (AIOps)
 
-> :information_source: Upon a handler error, the whole chain is automatically retried up to 3 times
+### The ignoreEvents handler
+Self explanatory, the events in the list will cause the chain to be stopped. There is `Add`, `Update` and `Delete` events only.
 
-###### The diff handler
-This is the most powerful handler, and should be for almost all use cases the base handler as it filters noisy events reporting only the changes to manifests.
+### The Slack handler
+The slack handler notifies of an event using the payload of the handler as text, combined with the diff handler report changes into your manifests.
 
-###### The log handler
-This is used often for testing but for recording reported changes right after the diff handler as well, enriching your logs and metrics with fresh high level events that can be used for root cause analysis either for humans or machines (AIOps)
-
-###### The Slack handler
-Have you ever being bitten by a change that a colleague never reported? running this handler after the `diff` handler you will get notifications into your slack channel about any change in your cluster. 
-
-####### Configure slack
+Have you ever being bitten in production by a change that a colleague never communicated? running this handler after the `diff` handler you will get notifications into your slack channel about any change in your cluster. 
 
 In order to post messages with kwatchman to slack in a channel you have to 
 
-1. [Create an slack application](https://api.slack.com/apps/new), you can call it `kwatchamn`
+1. [Create an slack application](https://api.slack.com/apps/new), you can call it `kwatchman`
 2. Create an Incoming Webhook, the url will be use to configure kwatchman later on
 
-Both steps are pretty much the same as if you follow [slack's hello wolrd tutorial](https://api.slack.com/tutorials/slack-apps-hello-world)
+Both steps are pretty much the same as if you follow [slack's hello world tutorial](https://api.slack.com/tutorials/slack-apps-hello-world)
 
 ## Compatibility matrix
-Kwatchman uses [go-client](https://github.com/kubernetes/client-go) and a forked version of [kooper](https://github.com/snebel29/kooper) and it's therefore coupled to their version compatibility, new released may be required in order to fully work with future versions, please check the compatibility matrix which is provided, any reported issue will be fixed in a best effor basis.
+Kwatchman uses [go-client](https://github.com/kubernetes/client-go) and a forked version of [kooper](https://github.com/snebel29/kooper) and it's therefore constrained to their version compatibility, new released may be required in order to fully work with future k8s versions, please check the compatibility matrix which is provided, any reported issue will be fixed in a best effor basis.
 
-kwatchman version | k8s version |
+| kwatchman version | k8s version |
 |:----------:|:-------------:|
 | v1.0.0 |  +1.11 |
 
@@ -75,32 +112,11 @@ kwatchman version | k8s version |
 - [chowkidar](https://github.com/stakater/Chowkidar)
 
 ## Development
-### Dependencies
+See [DEVELOPMENT.md](DEVELOPMENT.md)
 
-- [make](https://www.gnu.org/software/make/)
-- [docker](https://www.docker.com/)
-- [go](https://golang.org/dl/) >= 1.12 official builds currently uses 1.12
-- [dep](https://github.com/golang/dep) will soon be replaced by go modules
+## Coming soon
 
-### Testing
-```
-$ make test
-```
-
-### Build
-```
-$ VERSION=1.0.0 make build
-```
-
-#### Docker image
-```
-$ VERSION=1.0.0 make docker-image
-```
-
-### Release
-Relase of new docker images is achieved by creating a git tag, and through circleci
-```
-$ git tag v1.0.0
-$ git push origin master --tags
-```
-
+- Diff handler reporting semantic differences in a structure way
+- Resource annotations policies, to for example don't report pod replicas changes, useful if deployment is controlled by pod autoscaler, but any policycould be implemented
+- Webhook and local executor handler, to hand the execution chain to a local script or remote endpoint
+- handler plugins, implement your own handlers, install and share them "à-volonté"

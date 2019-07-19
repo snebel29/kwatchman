@@ -1,4 +1,4 @@
-# K8s resources to watch
+## List of resources to watch
 [[resource]]
 kind = "deployment"
 
@@ -14,17 +14,18 @@ kind = "daemonset"
 [[resource]]
 kind = "ingress"
 
-# Handlers will be trigger in this specific order
-# Diff handler should typically be the first handler to trigger
+## Handlers to run, executed in its configured order
 [[handler]]
 name = "diff"
 
 [[handler]]
 name = "log"
 
-[[handler]]
-name        = "slack"
-clusterName = "myClusterName"
-webhookURL  = "https://slack-webhook-url"
+#[[handler]]
+#name = "ignoreEvents"
+#events = ["Add", "Update", "Delete"]
 
-# ignoreEvents = ["Add", "Update", "Delete"]
+#[[handler]]
+#name        = "slack"
+#clusterName = "myClusterName"
+#webhookURL  = "https://slack-webhook-url"
