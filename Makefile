@@ -10,6 +10,7 @@ COVERAGE_FILE=/tmp/coverage.out
 LD_FLAGS="-X ${REPOSITORY}/internal/pkg/cli.Version=$(VERSION) -w -extldflags -static"
 
 
+# To ensure that all built code and potentially non tested is covered by the race detector
 report-race-conditions:
 	go build -race cmd/*.go
 
@@ -17,12 +18,13 @@ build:
 	CGO_ENABLED=0 go build -ldflags $(LD_FLAGS) cmd/*.go
 
 test:
-	go test -race ./... -cover
+	go test -race ./... -coverprofile=coverage.txt -covermode=atomic
 
 test-coverage-report:
 	go test ./... -coverprofile=$(COVERAGE_FILE)
 	go tool cover -html=$(COVERAGE_FILE)
 
+          file: {{ coverage_report_filepath }}
 clean:
 	go clean
 
