@@ -28,18 +28,21 @@ kwatchman:
     handler:
       - name: diff
       - name: log
-      #- name: slack
-      #  clustername: ""
-      #  webhookURL: ""
-      #  ignoreEvents: []
+      # - name: ignoreEvents
+      #   events:
+      #     - Add
+      #     - Delete
+      # - name: slack
+      #   clustername: ""
+      #   webhookURL: ""
 
 resources:
-   limits:
-     cpu: 100m
-     memory: 128Mi
-   requests:
-     cpu: 100m
-     memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
 
 rbac:
   # Specifies whether RBAC resources should be created
