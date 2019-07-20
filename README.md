@@ -1,4 +1,10 @@
 # Kwatchman
+
+[![CircleCI](https://circleci.com/gh/snebel29/kwatchman.svg?style=svg)](https://circleci.com/gh/snebel29/kwatchman)
+[![codecov](https://codecov.io/gh/snebel29/kwatchman/branch/master/graph/badge.svg)](https://codecov.io/gh/snebel29/kwatchman)
+![License](https://img.shields.io/github/license/snebel29/kwatchman.svg)
+![Stable](https://img.shields.io/github/tag/snebel29/kwatchman.svg)
+
 kwatchman is a tool to watch for k8s resources changes and trigger handlers
 
  - kwatchman leverages kubernetes watch and list endpoints to then pipe `Add`, `Update` and `Delete` events through a chain of built-in handlers

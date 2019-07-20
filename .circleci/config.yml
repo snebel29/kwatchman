@@ -9,6 +9,7 @@ jobs:
       - checkout
 
       - run: make test
+      - run: bash <(curl -s https://codecov.io/bash)
       - run: make report-race-conditions
 
   release:
