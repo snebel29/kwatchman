@@ -46,14 +46,12 @@ func (h *diffHandler) runAdd(ctx context.Context, evt *handler.Event) error {
 	cleanedManifest := evt.K8sManifest
 	h.storage.Add(getObjID(evt), cleanedManifest)
 
-	runNext := true
 	// Initial sache sync-up events are "Add", we don't want them to be notified
 	// but we want them to fill up our storage for future comparison
 	if !evt.K8sEvt.HasSynced {
-		runNext = false
+		evt.RunNext = false
 	}
 
-	evt.RunNext = runNext
 	return nil
 }
 
@@ -62,7 +60,6 @@ func (h *diffHandler) runUpdate(ctx context.Context, evt *handler.Event) error {
 
 	var diff []byte
 	var err error
-	runNext := false
 	cleanedManifest := evt.K8sManifest
 
 	// Since this is an update, there should be a cleaned manifest into the storage
@@ -70,27 +67,25 @@ func (h *diffHandler) runUpdate(ctx context.Context, evt *handler.Event) error {
 	if storedManifest, ok := h.storage.Get(getObjID(evt)); ok && evt.K8sEvt.HasSynced {
 		diff, err = diffTextLines(storedManifest, cleanedManifest)
 		if err != nil {
+			evt.RunNext = false
 			return errors.Wrap(err, "diffTextLines")
 		}
 		// If there is differences we allow for the next handler to run
 		// typically a notifier such as slack
-		if len(diff) > 0 {
-			runNext = true
+		if len(diff) < 0 {
+			evt.RunNext = false
 		}
+		evt.Payload = diff
 	}
 
 	// Adding to the storage only after comparison
 	h.storage.Add(getObjID(evt), cleanedManifest)
-
-	evt.RunNext = runNext
-	evt.Payload = diff
 	return nil
 }
 
 // runDelete deletes the object from storage and keep moving forward in the chain
 func (h *diffHandler) runDelete(ctx context.Context, evt *handler.Event) error {
 	h.storage.Delete(getObjID(evt))
-	evt.RunNext = true
 	return nil
 }
 
@@ -107,6 +102,7 @@ func (h *diffHandler) Run(ctx context.Context, evt *handler.Event) error {
 		// Clean only for Add and Update since Delete has no manifest and would fail
 		cleanedManifest, err := cleanK8sManifest(evt.K8sManifest, h.annotationsToClean)
 		if err != nil {
+			evt.RunNext = false
 			return err
 		}
 		evt.K8sManifest = cleanedManifest
@@ -122,6 +118,7 @@ func (h *diffHandler) Run(ctx context.Context, evt *handler.Event) error {
 	}
 
 	// If none of above events matches return an error
+	evt.RunNext = false
 	return fmt.Errorf("Unknown event kind %s", evt.K8sEvt.Kind)
 }
 

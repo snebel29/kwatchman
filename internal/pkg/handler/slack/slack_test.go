@@ -64,6 +64,7 @@ func TestMsgToSlack(t *testing.T) {
 
 	evt := &handler.Event{
 		K8sEvt:       &common.K8sEvent{Kind: "Update"},
+		RunNext:      true,
 		ResourceKind: resourceKind,
 		K8sManifest:  manifest,
 		Payload:      payload,

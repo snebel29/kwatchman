@@ -36,6 +36,5 @@ func (h *logHandler) Run(ctx context.Context, evt *handler.Event) error {
 	log.Infof("%#v\n%s", evt.K8sEvt, string(evt.Payload))
 	log.Debugf("%s", string(manifestToPrint))
 
-	evt.RunNext = true
 	return nil
 }
