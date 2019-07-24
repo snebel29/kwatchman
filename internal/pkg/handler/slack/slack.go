@@ -48,18 +48,17 @@ func NewSlackHandler(c config.Handler) handler.Handler {
 	}
 }
 
-func (h *slackHandler) Run(ctx context.Context, evt *handler.Event) error {
-	title := fmt.Sprintf("%s %s\n%s", strings.ToUpper(evt.K8sEvt.Kind), evt.ResourceKind, evt.K8sEvt.Key)
-
+func buildTextField(payload []byte) string {
 	// From Aug-2018 Slack requires text field to be under 4000 characters
 	// https://api.slack.com/changelog/2018-04-truncating-really-long-messages
-	var text string
-	if len(evt.Payload) == 0 {
-		text = ""
-	} else {
-		text = fmt.Sprintf("```%s```", truncateString(string(evt.Payload), 3994))
+	if len(payload) == 0 {
+		return ""
 	}
+	return fmt.Sprintf("```%s```", truncateString(string(payload), 3994))
+}
 
+func (h *slackHandler) Run(ctx context.Context, evt *handler.Event) error {
+	title := fmt.Sprintf("%s %s\n%s", strings.ToUpper(evt.K8sEvt.Kind), evt.ResourceKind, evt.K8sEvt.Key)
 	// https://api.slack.com/docs/message-attachments
 	attachment := slack.Attachment{
 		Title:      title,
@@ -67,7 +66,7 @@ func (h *slackHandler) Run(ctx context.Context, evt *handler.Event) error {
 		Fallback:   title,
 		AuthorName: "snebel29/kwatchman",
 		AuthorLink: "https://github.com/snebel29/kwatchman",
-		Text:       text,
+		Text:       buildTextField(evt.Payload),
 		Footer:     h.config.ClusterName,
 		Ts:         json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
 	}

@@ -60,11 +60,19 @@ func TestGoodNewConfigShouldParseCorrectly(t *testing.T) {
 	for _, h := range config.Handlers {
 		if h.Name == "ignoreEvents" &&
 			reflect.DeepEqual(h.IgnoreEvents, []string{"Add", "Delete"}) {
-				found = true
+			found = true
 		}
 	}
 	if !found {
 		t.Errorf("Events should have been found, got %#v instead", config.Handlers)
 	}
 
+}
+
+func TestNonExistantConfigShouldReturnError_NewConfig(t *testing.T) {
+	fixture := "nonexistent.toml"
+	_, err := loadConfigFileHelper(fixture)
+	if err == nil {
+		t.Error("there should have been an error")
+	}
 }
