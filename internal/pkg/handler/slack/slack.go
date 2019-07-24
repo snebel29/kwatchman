@@ -75,8 +75,6 @@ func (h *slackHandler) Run(ctx context.Context, evt *handler.Event) error {
 		Attachments: []slack.Attachment{attachment},
 	}
 
-	evt.RunNext = true
-
 	err := slack.PostWebhook(h.config.WebhookURL, msg)
 	if err != nil {
 		evt.RunNext = false

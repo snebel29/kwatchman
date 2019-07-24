@@ -86,6 +86,7 @@ func newKooperHandlerFunction(
 
 		err = chainOfHandlers.Run(nil, &handler.Event{
 			K8sEvt:       evt,
+			RunNext:      true, // Zero value of bool is false, therefore we explicitly set RunNext to true
 			ResourceKind: resourceKind,
 			K8sManifest:  manifest,
 			Payload:      []byte{},

@@ -21,6 +21,7 @@ func TestIgnoreEventsHandler_Run(t *testing.T) {
 
 	evt := &handler.Event{
 		K8sEvt:       &common.K8sEvent{Kind: "Update"},
+		RunNext:      true,
 		ResourceKind: resourceKind,
 		K8sManifest:  manifest,
 		Payload:      payload,
@@ -49,6 +50,7 @@ func TestIgnoreEventsHandler_Run(t *testing.T) {
 
 	evt = &handler.Event{
 		K8sEvt:       &common.K8sEvent{Kind: "Add"},
+		RunNext:      true,
 		ResourceKind: resourceKind,
 		K8sManifest:  manifest,
 		Payload:      payload,

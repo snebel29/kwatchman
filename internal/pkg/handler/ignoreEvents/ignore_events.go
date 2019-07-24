@@ -28,6 +28,5 @@ func (h *IgnoreEventsHandler) Run(ctx context.Context, evt *handler.Event) error
 			return nil
 		}
 	}
-	evt.RunNext = true
 	return nil
 }

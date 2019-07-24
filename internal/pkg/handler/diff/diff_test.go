@@ -28,6 +28,7 @@ func TestDiffHandler(t *testing.T) {
 			Kind:      "Add",
 			Object:    nil,
 		},
+		RunNext:     true,
 		K8sManifest: []byte("{\"kind\": \"fakeKind\"}\n"),
 		Payload:     []byte{},
 	}
@@ -60,6 +61,7 @@ func TestDiffHandler(t *testing.T) {
 			Kind:      "Update",
 			Object:    nil,
 		},
+		RunNext:     true,
 		K8sManifest: []byte("{\"kind\": \"fakeKindDifferentThanPrevious\"}\n"),
 		Payload:     []byte{},
 	}
@@ -86,6 +88,7 @@ func TestDiffHandler(t *testing.T) {
 			Kind:      "Delete",
 			Object:    nil,
 		},
+		RunNext:     true,
 		K8sManifest: []byte{},
 		Payload:     []byte{},
 	}

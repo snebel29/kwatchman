@@ -20,6 +20,7 @@ func TestLogHandlerFunc(t *testing.T) {
 
 	evt := &handler.Event{
 		K8sEvt:       &common.K8sEvent{},
+		RunNext:      true,
 		ResourceKind: resourceKind,
 		K8sManifest:  manifest,
 		Payload:      payload,
