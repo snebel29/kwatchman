@@ -48,17 +48,18 @@ func TestChainOfHandlers_Run(t *testing.T) {
 
 	ch := handler.NewChainOfHandlers(h1, h2, h3)
 
-	evt := &common.K8sEvent{}
 	manifest := []byte("manifest")
 	payload := []byte("payload")
 	resourceKind := "Deployment"
 
-	err := ch.Run(context.TODO(), handler.Input{
-		Evt:          evt,
+	evt := &handler.Event{
+		K8sEvt:       &common.K8sEvent{},
 		ResourceKind: resourceKind,
 		K8sManifest:  manifest,
 		Payload:      payload,
-	})
+	}
+
+	err := ch.Run(context.TODO(), evt)
 
 	if h1.Called != true || h2.Called != true {
 		t.Errorf("handlers should have been called h1: %t h2: %t", h1.Called, h2.Called)
@@ -81,8 +82,12 @@ func TestChainOfHandlers_Run(t *testing.T) {
 		t.Errorf("payload should have been passed h1: %s h2: %s", string(h1.PassedPayload), string(h2.PassedPayload))
 	}
 
-	if !reflect.DeepEqual(h1.PassedEvent, evt) || !reflect.DeepEqual(h2.PassedEvent, evt) {
-		t.Errorf("event should have been passed h1: %#v h2: %#v", h1.PassedEvent, h2.PassedEvent)
+	if !reflect.DeepEqual(h1.PassedEvent, evt.K8sEvt) {
+		t.Errorf("event should have been passed h1: %#v evt: %#v", h1.PassedEvent, evt.K8sEvt)
+	}
+
+	if !reflect.DeepEqual(h2.PassedEvent, evt.K8sEvt) {
+		t.Errorf("event should have been passed h2: %#v evt: %#v", h1.PassedEvent, evt.K8sEvt)
 	}
 
 	if !reflect.DeepEqual(h1.PassedContext, context.TODO()) || !reflect.DeepEqual(h2.PassedContext, context.TODO()) {

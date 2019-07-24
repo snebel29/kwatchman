@@ -48,22 +48,22 @@ func NewSlackHandler(c config.Handler) handler.Handler {
 	}
 }
 
-func (h *slackHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
-	title := fmt.Sprintf("%s %s\n%s", strings.ToUpper(input.Evt.Kind), input.ResourceKind, input.Evt.Key)
+func (h *slackHandler) Run(ctx context.Context, evt *handler.Event) error {
+	title := fmt.Sprintf("%s %s\n%s", strings.ToUpper(evt.K8sEvt.Kind), evt.ResourceKind, evt.K8sEvt.Key)
 
 	// From Aug-2018 Slack requires text field to be under 4000 characters
 	// https://api.slack.com/changelog/2018-04-truncating-really-long-messages
 	var text string
-	if len(input.Payload) == 0 {
+	if len(evt.Payload) == 0 {
 		text = ""
 	} else {
-		text = fmt.Sprintf("```%s```", truncateString(string(input.Payload), 3994))
+		text = fmt.Sprintf("```%s```", truncateString(string(evt.Payload), 3994))
 	}
 
 	// https://api.slack.com/docs/message-attachments
 	attachment := slack.Attachment{
 		Title:      title,
-		Color:      h.EventColour[input.Evt.Kind],
+		Color:      h.EventColour[evt.K8sEvt.Kind],
 		Fallback:   title,
 		AuthorName: "snebel29/kwatchman",
 		AuthorLink: "https://github.com/snebel29/kwatchman",
@@ -75,17 +75,12 @@ func (h *slackHandler) Run(ctx context.Context, input handler.Input) (handler.Ou
 		Attachments: []slack.Attachment{attachment},
 	}
 
-	output := handler.Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     true,
-	}
+	evt.RunNext = true
 
 	err := slack.PostWebhook(h.config.WebhookURL, msg)
 	if err != nil {
-		err = errors.Wrap(err, "PostWebhook: ")
-		output.RunNext = false
-		return output, err
+		evt.RunNext = false
+		return errors.Wrap(err, "PostWebhook: ")
 	}
-	return output, nil
+	return nil
 }

@@ -25,19 +25,17 @@ func NewLogHandler(c config.Handler) handler.Handler {
 
 // log handler logs the event, and can be used for testing, and troubleshooting
 // by enriching your event logs with k8s events
-func (h *logHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
-	manifestToPrint := input.K8sManifest
-	_json, err := handler.PrettyPrintJSON(input.K8sManifest)
+func (h *logHandler) Run(ctx context.Context, evt *handler.Event) error {
+	manifestToPrint := evt.K8sManifest
+	_json, err := handler.PrettyPrintJSON(evt.K8sManifest)
 
 	if err == nil {
 		manifestToPrint = _json
 	}
 
-	log.Infof("%#v\n%s", input.Evt, string(input.Payload))
+	log.Infof("%#v\n%s", evt.K8sEvt, string(evt.Payload))
 	log.Debugf("%s", string(manifestToPrint))
 
-	return handler.Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     true}, nil
+	evt.RunNext = true
+	return nil
 }

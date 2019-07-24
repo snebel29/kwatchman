@@ -12,22 +12,20 @@ import (
 func TestLogHandlerFunc(t *testing.T) {
 
 	hook := log_test.NewGlobal()
-
 	h := NewLogHandler(config.Handler{})
 
-	evt := &common.K8sEvent{}
 	manifest := []byte("{\"a\": 1}")
 	payload := []byte("payload")
 	resourceKind := "Deployment"
 
-	output, err := h.Run(
-		nil,
-		handler.Input{
-			Evt:          evt,
-			ResourceKind: resourceKind,
-			K8sManifest:  manifest,
-			Payload:      payload,
-		})
+	evt := &handler.Event{
+		K8sEvt:       &common.K8sEvent{},
+		ResourceKind: resourceKind,
+		K8sManifest:  manifest,
+		Payload:      payload,
+	}
+
+	err := h.Run(nil, evt)
 	m := hook.Entries
 
 	if len(m) != 1 {
@@ -38,13 +36,13 @@ func TestLogHandlerFunc(t *testing.T) {
 	}
 
 	// TODO: Testing Ouput is common among some handler files, we could create a helper function
-	if output.RunNext != true {
+	if evt.RunNext != true {
 		t.Error("RunNext should be true")
 	}
-	if !reflect.DeepEqual(output.Payload, payload) {
-		t.Errorf("Payload %s should match %s", string(output.Payload), string(payload))
+	if !reflect.DeepEqual(evt.Payload, payload) {
+		t.Errorf("Payload %s should match %s", string(evt.Payload), string(payload))
 	}
-	if !reflect.DeepEqual(output.K8sManifest, manifest) {
-		t.Errorf("K8sManifest %s should match %s", string(output.K8sManifest), string(manifest))
+	if !reflect.DeepEqual(evt.K8sManifest, manifest) {
+		t.Errorf("K8sManifest %s should match %s", string(evt.K8sManifest), string(manifest))
 	}
 }

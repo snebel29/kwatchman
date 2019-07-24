@@ -12,27 +12,21 @@ import (
 
 // Handler interface
 type Handler interface {
-	Run(context.Context, Input) (Output, error)
+	Run(context.Context, *Event) error
 }
 
-// Input holds the input data for any handler
-type Input struct {
-	Evt          *common.K8sEvent
+// Event holds the input data for any handler
+type Event struct {
+	K8sEvt       *common.K8sEvent
+	RunNext      bool
 	ResourceKind string
 	K8sManifest  []byte
 	Payload      []byte //This is a free field that can hold, anything such as text, images, etc
 }
 
-// Output holds the output data from any handler execution
-type Output struct {
-	K8sManifest []byte
-	Payload     []byte //This is a free field that can hold, anything such as text, images, etc
-	RunNext     bool
-}
-
 // ChainOfHandlers Interface
 type ChainOfHandlers interface {
-	Run(context.Context, Input) error
+	Run(context.Context, *Event) error
 }
 
 // chainOfHandlers holds a list of ResourcesHandlerFunc that can be executed sequencially
@@ -42,25 +36,15 @@ type chainOfHandlers struct {
 
 // Run will execute each handler one after the other, the handler itself is responsible to decide
 // whether the next handler should be executed or not
-func (c *chainOfHandlers) Run(ctx context.Context, input Input) error {
-	toSend := input.K8sManifest
-	payload := input.Payload
-
+func (c *chainOfHandlers) Run(ctx context.Context, evt *Event) error {
 	for i, h := range c.handlers {
-		output, err := h.Run(ctx, Input{
-			Evt:          input.Evt,
-			ResourceKind: input.ResourceKind,
-			K8sManifest:  toSend,
-			Payload:      payload,
-		})
+		err := h.Run(ctx, evt)
 		if err != nil {
 			return errors.Wrapf(err, "The %d function failed within chainOfHandlers run()", i)
 		}
-		if !output.RunNext {
+		if !evt.RunNext {
 			break
 		}
-		toSend = output.K8sManifest
-		payload = output.Payload
 	}
 	return nil
 }
