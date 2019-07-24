@@ -21,6 +21,7 @@ type diffHandler struct {
 	config             config.Handler
 	annotationsToClean []string
 	storage            *storage
+	diffCommand        string
 }
 
 // NewDiffHandler return a diff handler and defines the default
@@ -32,7 +33,8 @@ func NewDiffHandler(c config.Handler) handler.Handler {
 			"deployment.kubernetes.io/revision",
 			"kubectl.kubernetes.io/last-applied-configuration",
 		},
-		storage: newStorage(),
+		storage:     newStorage(),
+		diffCommand: "diff",
 	}
 }
 
@@ -65,14 +67,13 @@ func (h *diffHandler) runUpdate(ctx context.Context, evt *handler.Event) error {
 	// Since this is an update, there should be a cleaned manifest into the storage
 	// for safety we double check, the same apply for HasSynced
 	if storedManifest, ok := h.storage.Get(getObjID(evt)); ok && evt.K8sEvt.HasSynced {
-		diff, err = diffTextLines(storedManifest, cleanedManifest)
+		diff, err = diffTextLines(h.diffCommand, storedManifest, cleanedManifest)
 		if err != nil {
 			evt.RunNext = false
 			return errors.Wrap(err, "diffTextLines")
 		}
-		// If there is differences we allow for the next handler to run
-		// typically a notifier such as slack
-		if len(diff) < 0 {
+		// If there is NO difference we do not allow for the next handler to run
+		if len(diff) < 1 {
 			evt.RunNext = false
 		}
 		evt.Payload = diff
@@ -136,7 +137,7 @@ func createTempFile(content []byte) (string, error) {
 	return tmpfile.Name(), nil
 }
 
-func diffTextLines(text1, text2 []byte) ([]byte, error) {
+func diffTextLines(command string, text1, text2 []byte) ([]byte, error) {
 	// This function is currently coupled with POSIX diff command
 	// which is for now a mandatory requirement, in the future we will be able
 	// to configure our own, and eventually make semantic diff using pure go code
@@ -152,7 +153,7 @@ func diffTextLines(text1, text2 []byte) ([]byte, error) {
 	}
 	defer os.Remove(file2)
 
-	output, err := exec.Command("diff", file1, file2).CombinedOutput()
+	output, err := exec.Command(command, file1, file2).CombinedOutput()
 	if err != nil {
 		switch err.(type) {
 		case *exec.ExitError:
