@@ -36,50 +36,41 @@ func NewDiffHandler(c config.Handler) handler.Handler {
 	}
 }
 
-func getObjID(input handler.Input) string {
-	return fmt.Sprintf("%s/%s", input.Evt.Key, input.ResourceKind)
-}
-
-// Helper error function to return a handler error
-// runNext value will be false as this is the zero value for bool
-func (h *diffHandler) error(err error) (handler.Output, error) {
-	return handler.Output{}, err
+func getObjID(evt *handler.Event) string {
+	return fmt.Sprintf("%s/%s", evt.K8sEvt.Key, evt.ResourceKind)
 }
 
 // runAdd runs the handler when the event is Add
-func (h *diffHandler) runAdd(ctx context.Context, input handler.Input) (handler.Output, error) {
+func (h *diffHandler) runAdd(ctx context.Context, evt *handler.Event) error {
 
-	cleanedManifest := input.K8sManifest
-	h.storage.Add(getObjID(input), cleanedManifest)
+	cleanedManifest := evt.K8sManifest
+	h.storage.Add(getObjID(evt), cleanedManifest)
 
 	runNext := true
-	// Initial scache ync-up events are "Add", we don't want them to be notified
+	// Initial sache sync-up events are "Add", we don't want them to be notified
 	// but we want them to fill up our storage for future comparison
-	if !input.Evt.HasSynced {
+	if !evt.K8sEvt.HasSynced {
 		runNext = false
 	}
 
-	return handler.Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     runNext,
-	}, nil
+	evt.RunNext = runNext
+	return nil
 }
 
 // runUpdate runs the handler when the event is Update
-func (h *diffHandler) runUpdate(ctx context.Context, input handler.Input) (handler.Output, error) {
+func (h *diffHandler) runUpdate(ctx context.Context, evt *handler.Event) error {
 
 	var diff []byte
 	var err error
 	runNext := false
-	cleanedManifest := input.K8sManifest
+	cleanedManifest := evt.K8sManifest
 
 	// Since this is an update, there should be a cleaned manifest into the storage
 	// for safety we double check, the same apply for HasSynced
-	if storedManifest, ok := h.storage.Get(getObjID(input)); ok && input.Evt.HasSynced {
+	if storedManifest, ok := h.storage.Get(getObjID(evt)); ok && evt.K8sEvt.HasSynced {
 		diff, err = diffTextLines(storedManifest, cleanedManifest)
 		if err != nil {
-			return h.error(errors.Wrap(err, "diffTextLines"))
+			return errors.Wrap(err, "diffTextLines")
 		}
 		// If there is differences we allow for the next handler to run
 		// typically a notifier such as slack
@@ -89,24 +80,18 @@ func (h *diffHandler) runUpdate(ctx context.Context, input handler.Input) (handl
 	}
 
 	// Adding to the storage only after comparison
-	h.storage.Add(getObjID(input), cleanedManifest)
+	h.storage.Add(getObjID(evt), cleanedManifest)
 
-	return handler.Output{
-		K8sManifest: cleanedManifest,
-		Payload:     diff,
-		RunNext:     runNext,
-	}, nil
+	evt.RunNext = runNext
+	evt.Payload = diff
+	return nil
 }
 
 // runDelete deletes the object from storage and keep moving forward in the chain
-func (h *diffHandler) runDelete(ctx context.Context, input handler.Input) (handler.Output, error) {
-
-	h.storage.Delete(getObjID(input))
-	return handler.Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     true,
-	}, nil
+func (h *diffHandler) runDelete(ctx context.Context, evt *handler.Event) error {
+	h.storage.Delete(getObjID(evt))
+	evt.RunNext = true
+	return nil
 }
 
 // Run spits out the differentce between previous versions of K8sManifest
@@ -114,30 +99,30 @@ func (h *diffHandler) runDelete(ctx context.Context, input handler.Input) (handl
 // because filters noise by cleaning metadata consolidating logical changes
 // from the user perspective, output returns the cleaned manifest and the diff is
 // returned in the payload, next handler is run only if a difference is found
-func (h *diffHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
+func (h *diffHandler) Run(ctx context.Context, evt *handler.Event) error {
 	ctx = nil
 
-	switch input.Evt.Kind {
+	switch evt.K8sEvt.Kind {
 	case "Add", "Update":
 		// Clean only for Add and Update since Delete has no manifest and would fail
-		cleanedManifest, err := cleanK8sManifest(input.K8sManifest, h.annotationsToClean)
+		cleanedManifest, err := cleanK8sManifest(evt.K8sManifest, h.annotationsToClean)
 		if err != nil {
-			return h.error(err)
+			return err
 		}
-		input.K8sManifest = cleanedManifest
+		evt.K8sManifest = cleanedManifest
 	}
 
-	switch input.Evt.Kind {
+	switch evt.K8sEvt.Kind {
 	case "Add":
-		return h.runAdd(ctx, input)
+		return h.runAdd(ctx, evt)
 	case "Update":
-		return h.runUpdate(ctx, input)
+		return h.runUpdate(ctx, evt)
 	case "Delete":
-		return h.runDelete(ctx, input)
+		return h.runDelete(ctx, evt)
 	}
 
 	// If none of above events matches return an error
-	return h.error(fmt.Errorf("Unknown event kind %s", input.Evt.Kind))
+	return fmt.Errorf("Unknown event kind %s", evt.K8sEvt.Kind)
 }
 
 func createTempFile(content []byte) (string, error) {

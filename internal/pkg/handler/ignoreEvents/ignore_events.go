@@ -12,7 +12,7 @@ func init() {
 }
 
 type IgnoreEventsHandler struct {
-	config      config.Handler
+	config config.Handler
 }
 
 // NewSlackHandler return the slack handler
@@ -20,20 +20,14 @@ func NewIgnoreEventsHandler(c config.Handler) handler.Handler {
 	return &IgnoreEventsHandler{config: c}
 }
 
-func (h *IgnoreEventsHandler) noErrorNoRunNext() (handler.Output, error) {
-	return handler.Output{RunNext: false}, nil
-}
-
 // IgnoreEvents handler stop chain execution if the event kind is on the configured list
-func (h *IgnoreEventsHandler) Run(ctx context.Context, input handler.Input) (handler.Output, error) {
+func (h *IgnoreEventsHandler) Run(ctx context.Context, evt *handler.Event) error {
 	for _, event := range h.config.IgnoreEvents {
-		if input.Evt.Kind == event {
-			return h.noErrorNoRunNext()
+		if evt.K8sEvt.Kind == event {
+			evt.RunNext = false
+			return nil
 		}
 	}
-	return 	handler.Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     true,
-	}, nil
+	evt.RunNext = true
+	return nil
 }

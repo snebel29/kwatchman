@@ -21,26 +21,25 @@ func TestDiffHandler(t *testing.T) {
 	h1 := NewDiffHandler(config.Handler{})
 	key := "key1"
 
-	output, err := h1.Run(
-		context.TODO(),
-		handler.Input{
-			Evt: &common.K8sEvent{
-				Key:       key,
-				HasSynced: true,
-				Kind:      "Add",
-				Object:    nil,
-			},
-			K8sManifest: []byte("{\"kind\": \"fakeKind\"}\n"),
-			Payload:     []byte{},
+	evt := &handler.Event{
+		K8sEvt: &common.K8sEvent{
+			Key:       key,
+			HasSynced: true,
+			Kind:      "Add",
+			Object:    nil,
 		},
-	)
+		K8sManifest: []byte("{\"kind\": \"fakeKind\"}\n"),
+		Payload:     []byte{},
+	}
 
-	diff := output.Payload
+	err := h1.Run(context.TODO(), evt)
+
+	diff := evt.Payload
 	if len(diff) != 0 {
 		t.Error("There should be no diff because is a new event")
 	}
 
-	if output.RunNext != true {
+	if evt.RunNext != true {
 		t.Error("nextRun should be true because this is an Add event")
 	}
 
@@ -54,26 +53,24 @@ func TestDiffHandler(t *testing.T) {
 
 	// The same key with diffrent kind is Updated on the same handler
 	// now a difference should be returned
-	output, err = h1.Run(
-		context.TODO(),
-		handler.Input{
-			Evt: &common.K8sEvent{
-				Key:       key,
-				HasSynced: true,
-				Kind:      "Update",
-				Object:    nil,
-			},
-			K8sManifest: []byte("{\"kind\": \"fakeKindDifferentThanPrevious\"}\n"),
-			Payload:     []byte{},
+	evt = &handler.Event{
+		K8sEvt: &common.K8sEvent{
+			Key:       key,
+			HasSynced: true,
+			Kind:      "Update",
+			Object:    nil,
 		},
-	)
+		K8sManifest: []byte("{\"kind\": \"fakeKindDifferentThanPrevious\"}\n"),
+		Payload:     []byte{},
+	}
+	err = h1.Run(context.TODO(), evt)
 
-	diff = output.Payload
+	diff = evt.Payload
 	if len(diff) < 1 {
-		t.Errorf("there should be some difference")
+		t.Error("there should be some difference")
 	}
 
-	if output.RunNext != true {
+	if evt.RunNext != true {
 		t.Error("nextRun should be true because difference was found")
 	}
 
@@ -82,26 +79,25 @@ func TestDiffHandler(t *testing.T) {
 	}
 
 	// Manifest should be deleted from storage and next handlers not to be trigger
-	output, err = h1.Run(
-		context.TODO(),
-		handler.Input{
-			Evt: &common.K8sEvent{
-				Key:       key,
-				HasSynced: true,
-				Kind:      "Delete",
-				Object:    nil,
-			},
-			K8sManifest: []byte{},
-			Payload:     []byte{},
+	evt = &handler.Event{
+		K8sEvt: &common.K8sEvent{
+			Key:       key,
+			HasSynced: true,
+			Kind:      "Delete",
+			Object:    nil,
 		},
-	)
+		K8sManifest: []byte{},
+		Payload:     []byte{},
+	}
 
-	diff = output.Payload
+	err = h1.Run(context.TODO(), evt)
+
+	diff = evt.Payload
 	if len(diff) != 0 {
 		t.Error("There should be no difference")
 	}
 
-	if output.RunNext != true {
+	if evt.RunNext != true {
 		t.Error("nextRun should be true because deletes are notified")
 	}
 

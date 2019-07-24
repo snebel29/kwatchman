@@ -17,18 +17,16 @@ type MockHandler struct {
 }
 
 // Run the mock
-func (h *MockHandler) Run(ctx context.Context, input Input) (Output, error) {
+func (h *MockHandler) Run(ctx context.Context, evt *Event) error {
 	h.Called = true
-	h.PassedPayload = input.Payload
-	h.PassedResourceKind = input.ResourceKind
-	h.PassedK8sManifest = input.K8sManifest
-	h.PassedEvent = input.Evt
+	h.PassedPayload = evt.Payload
+	h.PassedResourceKind = evt.ResourceKind
+	h.PassedK8sManifest = evt.K8sManifest
+	h.PassedEvent = evt.K8sEvt
 	h.PassedContext = ctx
 
-	return Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     true}, nil
+	evt.RunNext = true
+	return nil
 }
 
 // MockHandlerError call registry
@@ -42,11 +40,9 @@ type MockHandlerError struct {
 }
 
 // Run the mock
-func (h *MockHandlerError) Run(ctx context.Context, input Input) (Output, error) {
-	return Output{
-		K8sManifest: input.K8sManifest,
-		Payload:     input.Payload,
-		RunNext:     false}, fmt.Errorf("dummy error")
+func (h *MockHandlerError) Run(ctx context.Context, evt *Event) error {
+	evt.RunNext = false
+	return fmt.Errorf("dummy error")
 }
 
 // NewMockHandler return a mock

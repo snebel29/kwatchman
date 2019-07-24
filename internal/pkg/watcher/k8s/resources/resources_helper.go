@@ -84,8 +84,8 @@ func newKooperHandlerFunction(
 			return fmt.Errorf("unknown evt.Kind %s", evt.Kind)
 		}
 
-		err = chainOfHandlers.Run(nil, handler.Input{
-			Evt:          evt,
+		err = chainOfHandlers.Run(nil, &handler.Event{
+			K8sEvt:       evt,
 			ResourceKind: resourceKind,
 			K8sManifest:  manifest,
 			Payload:      []byte{},
