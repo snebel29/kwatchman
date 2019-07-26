@@ -15,10 +15,11 @@ type Handlers []Handler
 // of the handler to validate them, as well as to avoid naming conflicts, in the future namespacing
 // might me implemented
 type Handler struct {
-	Name         string   // Used by all handlers
-	ClusterName  string   // Used by slack handler
-	WebhookURL   string   // Used by slack handler
-	IgnoreEvents []string `mapstructure:"events"`// Used by ignoreEvents handler
+	Name           string   // Used by all handlers
+	ClusterName    string   // Used by slack handler
+	WebhookURL     string   // Used by slack handler
+	TimeoutSeconds int      // Used by local executor
+	IgnoreEvents   []string `mapstructure:"events"` // Used by ignoreEvents handler
 }
 
 // Resources holds a list of Resource
