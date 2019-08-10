@@ -3,12 +3,20 @@ SHELL := $(shell which bash)
 CONTAINER_USER ?= kwatchman
 VERSION        ?= development
 
+BUILD_DATE = $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+COMMIT     = $(shell git rev-parse --short HEAD)
+
 STABLE_VERSION_REGEX := ^v([0-9]{1,}\.){2}[0-9]{1,}$$
 
-REPOSITORY=github.com/snebel29/kwatchman
-COVERAGE_FILE=/tmp/coverage.out
-LD_FLAGS="-X ${REPOSITORY}/internal/pkg/cli.Version=$(VERSION) -w -extldflags -static"
+REPOSITORY = github.com/snebel29/kwatchman
+PKG        = ${REPOSITORY}/internal/pkg
 
+COVERAGE_FILE=/tmp/coverage.out
+
+LD_FLAGS = "-X ${PKG}/version.Version=$(VERSION) \
+			-X ${PKG}/version.BuildDate=$(BUILD_DATE) \
+			-X ${PKG}/version.Commit=$(COMMIT) \
+			-w -extldflags -static"
 
 # To ensure that all built code and potentially non tested is covered by the race detector
 report-race-conditions:
@@ -36,6 +44,9 @@ docker-image:
 	docker build -f build/Dockerfile \
 		--build-arg VERSION=$(VERSION) \
 		--build-arg REPOSITORY=$(REPOSITORY) \
+		--build-arg PKG=$(PKG) \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg COMMIT=$(COMMIT) \
 		--build-arg CONTAINER_USER=$(CONTAINER_USER) \
 		-t snebel29/kwatchman:$(VERSION) .
 

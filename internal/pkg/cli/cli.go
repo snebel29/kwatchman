@@ -1,14 +1,13 @@
 package cli
 
 import (
+	"os"
 	"fmt"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"os"
+	"github.com/snebel29/kwatchman/internal/pkg/version"
 )
 
 var (
-	// Version is initialized using LD_FLAGS during build process (Makefile)
-	Version   string
 	namespace = kingpin.Flag(
 		"namespace",
 		"k8s namespace where to get resources from: default to all").Default(
@@ -37,7 +36,7 @@ type Args struct {
 
 // NewCLI returns a CLI
 func NewCLI() *Args {
-	kingpin.Version(Version)
+	kingpin.Version(version.GetVersion().String())
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
 	return &Args{
