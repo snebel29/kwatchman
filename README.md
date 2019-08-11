@@ -27,7 +27,7 @@ To install kwatchman in the cluster, you can use its helm chart
 1. [Install helm](https://helm.sh/docs/using_helm/)
 2. [Install the chart](https://github.com/snebel29/snl-charts/tree/master/kwatchman)
 
-TL; DR
+### TL; DR
 ```console
 $ helm repo add snl-charts https://snebel29.github.io/snl-charts
 $ helm install --name kwatchman --namespace=kwatchman snl-charts/kwatchman
