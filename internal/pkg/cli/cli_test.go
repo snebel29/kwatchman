@@ -27,12 +27,14 @@ func TestCliArgs(t *testing.T) {
 	kubeconfig := "myKubeconfig"
 	config := "myConfig"
 	labels := "environment,environment notin (frontend)"
+	logLevel := "info"
 	os.Args = []string{
 		"kwatchman",
 		fmt.Sprintf("--namespace=%s", namespace),
 		fmt.Sprintf("--kubeconfig=%s", kubeconfig),
 		fmt.Sprintf("--config=%s", config),
 		fmt.Sprintf("--label-selector=%s", labels),
+		fmt.Sprintf("--log-level=%s", logLevel),
 	}
 
 	cli := NewCLI()
@@ -47,5 +49,8 @@ func TestCliArgs(t *testing.T) {
 	}
 	if cli.LabelSelector != labels {
 		t.Errorf("%s != %s", cli.LabelSelector, labels)
+	}
+	if cli.LogLevel != logLevel {
+		t.Errorf("%s != %s", cli.LogLevel, logLevel)
 	}
 }
