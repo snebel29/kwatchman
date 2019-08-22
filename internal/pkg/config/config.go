@@ -18,7 +18,7 @@ type Handler struct {
 	Name         string   // Used by all handlers
 	ClusterName  string   // Used by slack handler
 	WebhookURL   string   // Used by slack handler
-	IgnoreEvents []string `mapstructure:"events"`// Used by ignoreEvents handler
+	IgnoreEvents []string `mapstructure:"events"` // Used by ignoreEvents handler
 }
 
 // Resources holds a list of Resource
@@ -49,6 +49,11 @@ func readConfigFile(configFile string) error {
 func NewConfig() (*Config, error) {
 	var err error
 	c := cli.NewCLI()
+	logLevel, err := log.ParseLevel(c.LogLevel)
+	if err != nil {
+		return nil, err
+	}
+	log.SetLevel(logLevel)
 
 	if err = readConfigFile(c.ConfigFile); err != nil {
 		return nil, err

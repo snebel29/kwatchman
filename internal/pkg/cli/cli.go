@@ -1,10 +1,10 @@
 package cli
 
 import (
-	"os"
 	"fmt"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"github.com/snebel29/kwatchman/internal/pkg/version"
+	"gopkg.in/alecthomas/kingpin.v2"
+	"os"
 )
 
 var (
@@ -24,6 +24,9 @@ var (
 		"label-selector",
 		"k8s label selector string: default to all").Default(
 		"").Envar("KW_LABEL_SELECTOR").Short('l').String()
+	logLevel = kingpin.Flag(
+		"log-level",
+		"The log level (panic, fatal, error, warning, info, debug and trace)").Default("info").Short('z').String()
 )
 
 // Args holds the command line arguments
@@ -32,6 +35,7 @@ type Args struct {
 	Kubeconfig    string
 	ConfigFile    string
 	LabelSelector string
+	LogLevel      string
 }
 
 // NewCLI returns a CLI
@@ -44,5 +48,6 @@ func NewCLI() *Args {
 		Kubeconfig:    *kubeconfig,
 		ConfigFile:    *configFile,
 		LabelSelector: *labelSelector,
+		LogLevel:      *logLevel,
 	}
 }

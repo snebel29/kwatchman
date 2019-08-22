@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"os"
 	"path"
 	"reflect"
@@ -74,5 +75,33 @@ func TestNonExistantConfigShouldReturnError_NewConfig(t *testing.T) {
 	_, err := loadConfigFileHelper(fixture)
 	if err == nil {
 		t.Error("there should have been an error")
+	}
+}
+
+func TestWrongLogLevelShouldFail(t *testing.T) {
+	os.Args = []string{
+		"kwatchman",
+		"--log-level=wrongLogLevel",
+	}
+	if _, err := NewConfig(); err == nil {
+		t.Error("an error should have been returned")
+	}
+}
+
+func TestGoodLogLevelShouldSet(t *testing.T) {
+	level := "debug"
+	configFile := path.Join(path.Dir(thisFilename), "fixtures", "config.toml")
+
+	os.Args = []string{
+		"kwatchman",
+		fmt.Sprintf("--log-level=%s", level),
+		fmt.Sprintf("--config=%s", configFile),
+	}
+	if _, err := NewConfig(); err != nil {
+		t.Error(err)
+	}
+
+	if logrus.GetLevel().String() != level {
+		t.Errorf("level %s should be set, got %s instead", level, logrus.GetLevel())
 	}
 }
