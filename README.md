@@ -117,6 +117,7 @@ Kwatchman uses [go-client](https://github.com/kubernetes/client-go) and a forked
 
 - [kubewatch](https://github.com/bitnami-labs/kubewatch)
 - [chowkidar](https://github.com/stakater/Chowkidar)
+- [botkube](https://github.com/infracloudio/botkube)
 
 ## Development
 See [DEVELOPMENT.md](DEVELOPMENT.md)
