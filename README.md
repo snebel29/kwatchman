@@ -34,10 +34,15 @@ To install kwatchman in the cluster, you can use its helm chart
 $ helm repo add snl-charts https://snebel29.github.io/snl-charts
 $ helm install --name kwatchman --namespace=kwatchman snl-charts/kwatchman
 ```
-Customize default [value.yaml](https://raw.githubusercontent.com/snebel29/snl-charts/master/kwatchman/values.yaml) and add your handler configuration, such as slack webhook and pass the file using `--values` flag to deploy that configuration
+Customize default [value.yaml](https://raw.githubusercontent.com/snebel29/snl-charts/master/kwatchman/values.yaml) configuration, add/remove k8s resources, add your handler configuration, such as slack webhook and pass the file using `--values` flag to deploy your configuration along kwatchman.
 ```
 $ helm install --name kwatchman --namespace=kwatchman --values=values.yaml snl-charts/kwatchman
 ```
+
+#### Filtering
+- Filter resources by namespace and k8s labels, see [configuration](https://github.com/snebel29/snl-charts/tree/master/kwatchman#configuration)
+- Filter events, specific fields, etc. by vuilding your own handler, use [ignoreEvents](https://github.com/snebel29/kwatchman/blob/master/internal/pkg/handler/ignoreEvents/ignore_events.go) handler as a reference.
+
 
 ## Configuration
 kwatchman requires a configuration file in order to work, it uses [viper](https://github.com/spf13/viper) under the hood to read the file therefore you can use any of its accepted formats such as (JSON, YAML, TOML, etc.)
