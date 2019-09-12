@@ -24,6 +24,8 @@ kwatchman can work both internally and externally to the cluster, to work extern
 
 To install kwatchman in the cluster, you can use its helm chart
 
+> For installing tiller < `3.X` using RBAC you have to create a serviceaccount to run tiller with, like [here](https://github.com/helm/helm/blob/master/docs/rbac.md#tiller-and-role-based-access-control) 
+
 1. [Install helm](https://helm.sh/docs/using_helm/)
 2. [Install the chart](https://github.com/snebel29/snl-charts/tree/master/kwatchman)
 
