@@ -27,6 +27,21 @@ jobs:
       - run: make VERSION=${CIRCLE_TAG} docker-image
       - run: make VERSION=${CIRCLE_TAG} push-docker-image
 
+  release-master:
+    docker:
+      - image: circleci/golang:1.12
+
+    working_directory: /go/src/github.com/snebel29/kwatchman
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      - checkout
+
+      - run: echo "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin
+      - run: make VERSION=master docker-image
+      - run: make VERSION=master push-docker-image
+
 workflows:
   version: 2
   build-and-release:
@@ -43,3 +58,9 @@ workflows:
               only: /^v\d\.\d\.\d.*$/
             branches:
               ignore: /.*/
+      - release-master:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
