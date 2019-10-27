@@ -1,7 +1,7 @@
 SHELL := $(shell which bash)
 
 CONTAINER_USER ?= kwatchman
-VERSION        ?= development
+VERSION        ?= master
 
 BUILD_DATE = $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 COMMIT     = $(shell git rev-parse --short HEAD)
@@ -61,8 +61,6 @@ endif
 	docker image prune -f
 
 push-docker-image:
-
-	echo $(shell echo $(VERSION) | egrep "$(STABLE_VERSION_REGEX)")
 
 ifeq ($(shell echo $(VERSION) | egrep "$(STABLE_VERSION_REGEX)"),)
 	@echo "Version $(VERSION) is not stable"
