@@ -1,4 +1,4 @@
-FROM golang:1.11 as builder
+FROM golang:1.13 as builder
 LABEL maintainer="Sven Nebel <https://github.com/snebel29>"
 
 ARG VERSION
