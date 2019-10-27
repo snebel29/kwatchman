@@ -19,7 +19,7 @@ jobs:
     working_directory: /go/src/github.com/snebel29/kwatchman
     steps:
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: false
 
       - checkout
 
@@ -34,7 +34,7 @@ jobs:
     working_directory: /go/src/github.com/snebel29/kwatchman
     steps:
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: false
 
       - checkout
 
