@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/github/license/snebel29/kwatchman.svg)
 ![Stable](https://img.shields.io/github/tag/snebel29/kwatchman.svg)
 
-kwatchman is a tool to watch for k8s resources changes and trigger handlers, find additional information in [this blog post](https://suntzusays.dev/2019/08/10/watch-for-kubernetes-resources-changes-and-trigger-handlers-using-kwatchman/)
+kwatchman is a tool to watch for k8s resources changes and trigger handlers, find additional information in [this blog post](https://snebel29.github.io/2019/08/10/watch-for-kubernetes-resources-changes-and-trigger-handlers-using-kwatchman/)
 
  - kwatchman leverages kubernetes watch and list endpoints to then pipe `Add`, `Update` and `Delete` events through a chain of built-in handlers
  - kwatchman remove event noise when configuring its diff handler, by filtering events that have no user changes on its manifest.
